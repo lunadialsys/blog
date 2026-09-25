@@ -1,0 +1,93 @@
+---
+import {Font} from 'astro:assets';
+
+import Header from '../components/Header.astro';
+
+const title = Astro.props.title;
+const titleHeader = "Luna Dial System";
+---
+<html lang="en">
+    <head>
+        <Font cssVariable="--font-main" preload />
+        <Font cssVariable="--font-code"/>
+        <meta charset="utf-8"/>
+        <title>{title?.length > 0 ? `${title} / ${titleHeader}` : titleHeader}</title>
+    </head>
+    <body data-dark>
+        <div class="background-effect" />
+        <Header />
+        <slot/>
+    </body>
+    <script>
+        const $ = document.querySelector.bind(document);
+        const bgElement = $('.background-effect');
+        document.addEventListener('mousemove', (ev) => {
+            bgElement?.setAttribute('style', `--x: ${ev.pageX}px`);
+        });
+    </script>
+</html>
+
+<style is:global>
+body {
+    --text-dark: #ddd;
+    --deemphasise-dark: #888;
+    
+    --accent-dark: #dcc5f4;
+    
+    --bg-outer-dark: oklch(0.156 0.035 307);
+    --bg-hotspot-dark: oklch(0.285 0.069 307);
+
+    --codeblock-bg-dark: #22222255;
+    --codeblock-bg-inline-dark: #222222aa;
+}
+
+body[data-dark] {
+    --text: var(--text-dark);
+    --deemphasise: var(--deemphasise-dark);
+    --accent: var(--accent-dark);
+    --bg-outer: var(--bg-outer-dark);
+    --bg-hotspot: var(--bg-hotspot-dark);
+    --codeblock-bg: var(--codeblock-bg-dark);
+    --codeblock-bg-inline: var(--codeblock-bg-inline-dark);
+}
+
+.deemphasise {
+    color: var(--deemphasise);
+}
+
+body {
+    color: var(--text);
+    font-family: var(--font-main);
+    margin: 0;
+}
+
+a {
+    color: var(--text);
+}
+
+*::selection, *::-moz-selection {
+    color: black;
+    background: var(--accent);
+}
+
+.accent {
+    color: var(--accent);
+}
+
+</style>
+
+<style>
+.background-effect {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    z-index: -100;
+    --x: 20px;
+    --y: 100px;
+    background: radial-gradient(circle at left var(--x) top 120%, var(--bg-hotspot) 0%, var(--bg-outer) 110%);
+}
+</style>

@@ -1,0 +1,25 @@
+{
+  "name": "lunadialsys-blog",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/markdown-satteri": "^0.4.2",
+    "@shikijs/themes": "^4.4.3",
+    "@types/hast": "^3.0.5",
+    "astro": "^7.3.5",
+    "hastscript": "^9.0.1",
+    "satteri": "^0.10.5"
+  },
+  "allowScripts": {
+    "esbuild": true
+  }
+}

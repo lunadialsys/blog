@@ -1,0 +1,17 @@
+---
+import Default from '../layouts/Default.astro';
+import ContentHolder from '../components/ContentHolder.astro';
+import {getCollection} from 'astro:content';
+import PostLink from '../components/PostLink.astro';
+import type { CollectionEntry } from 'astro:content';
+
+const posts: CollectionEntry<'blog'>[] = (await getCollection('blog'))
+    .toSorted((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+<Default>
+    <ContentHolder noBackground>
+        {posts.map(post => <>
+            <PostLink id={post.id} />
+        </>)}
+    </ContentHolder>
+</Default>

@@ -1,0 +1,27 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import {getEntry, render} from 'astro:content';
+import PostHeader from './PostHeader.astro';
+
+const post = await getEntry('blog', Astro.props.id)!;
+const ren = await render(post as CollectionEntry<'blog'>);
+---
+<div class="post-link">
+    <PostHeader title={post!.data.title} post={post} link={`/${post!.id}`} />
+</div>
+
+<style>
+
+.post-link {
+    background-color: #00000077;
+    width: 100%;
+    height: 100%;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.post-link>h1 {
+    margin: 0;
+}
+
+</style>

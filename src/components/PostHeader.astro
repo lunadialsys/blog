@@ -1,0 +1,70 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Sep from './PostHeaderSeparator.astro';
+const post: CollectionEntry<'blog'> = Astro.props.post;
+import PostAuthor from './PostAuthor.astro';
+import { tagColourHash } from '../utils';
+
+const MONTHS_EN = ['January', 'February', 'March', 'April', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+---
+<div class="post-header">
+    <h1 class="header">{Astro.props.link ? <a class="post-link" href={Astro.props.link}>{Astro.props.title}</a> : Astro.props.title}</h1>
+    <hr/>
+    {
+        !post ? <></> :
+        <div class="line">
+            <span>{post.data.authors.map((e: string) => <PostAuthor name={e}/>)}</span>
+            <Sep />
+            <span>{post.data.date.getDay()} {MONTHS_EN[post.data.date.getMonth()-1]} {post.data.date.getFullYear()}</span>
+            <Sep />
+            <div class="tags">
+                {post.data.tags.map((e: string) => <div class="tag" style={`--tag-colour-hash: ${tagColourHash(e)};`}>
+                    <span>{e}</span>
+                </div>)}
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+.header {
+    font-size: 36pt;
+    font-weight: 300;
+    margin: 0 0;
+    display: inline-block;
+    width: fit-content;
+}
+
+.post-link {
+    text-decoration: none;
+}
+
+.line {
+    display: block;
+    margin: 0;
+}
+
+.line>p {
+    margin: 0;
+}
+
+.tags {
+    display: inline-flex;
+    flex-direction: row;
+    gap: 4pt;
+}
+
+.tag {
+    display: inline-block;
+    background-color: var(--tag-colour-hash);
+    color: black;
+    padding: 1pt 3pt;
+    border-radius: 4px;
+}
+
+hr {
+    margin: 0.5rem 0 1rem 0;
+    color: var(--accent);
+}
+</style>

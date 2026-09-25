@@ -1,0 +1,53 @@
+---
+title: Living with a severe sleep disorder
+authors: [nightshade]
+tags: [english, medical]
+date: 2026-09-24
+---
+For as long as I can remember, we've been having severe trouble falling asleep at the right time.
+It's all too often that we wake up at 3AM, and then get to the point of completely shutting down during the afternoon, feeling like we're dying.
+
+Because of this, we are - a lot of the time - useless during the daytime, as we are either too tired to think, or asleep, with little in-between.
+This severely stifles our quality of life and ability, and it's leading us to feeling crushed by our body.
+
+I'm not certain why this is, but I have some ideas, with the most likely being that we suffer from **non-24-hour sleep-wake disorder**.
+
+Non-24-hour sleep-wake disorder is a condition where the body's internal clock (the circadian rhythm) is not synchronised to the passage of the days.
+Most people's circadian rhythms are lined up, timed with the sunrise and sundown, to consistently awake in the day and sleep in the night.
+Our body does not seem to work like this; as the name implies, our circadian rhythm is not cleanly synchronised to a 24-hour breakpoint.
+This means that, like two cars flashing their turn signals simultaneously, over time it will get further and further out of sync with the daylight.
+
+The symptoms line up:
+- It is extremely inconsistent. We can go from sleeping perfectly fine, to being nearly unable to function during the daytime, within the span of a couple days.
+- Caffeine doesn't work. We have ADHD in any case, which means that caffeine doesn't do a ton for our body in general.
+- We are sighted, and have previous mental health diagnoses; this is a common comorbidity with N24SWD.
+    - This isn't nearly as strong enough of an argument as the other points, but it's worth bringing up.
+
+As one can probably imagine, having constant sleep issues isn't very helpful for feeling great during daily life.
+The main problems we face with a non-24 schedule are mainly emotional, as we also (used to) suffer from quite bad seasonal-affective depression.
+It's not quite the same, and it has diminished in the recent years, but being up very late into the night gives me a lot of the same feelings.
+
+A lot of the depressive feelings come from lack of social connection; feeling like a total outcast whenever we're awake in the early hours.
+It's alleviated by having friends in other timezones, but it can never go away...
+
+I have been trying to get myself to be more social when my sleep schedule is bad, using VRChat. I find it helps with my mental state
+to be able to head into a world and talk to people; that's the great advantage of having an always busy social platform like it,
+no matter how late it is there's going to be someone to talk to.
+
+Whenever it gets bad enough, we attempt to "hard reset" our sleep cycle by just... staying awake, sometimes for upwards of 24 hours.
+This is probably incredibly unhealthy, and my system-mate Crescent is certainly not happy with me for pushing myself this hard,
+but it's the only thing that works... _most of the time_.
+
+This post is being written during a particularly bad period, where
+I have tried for multiple days in a row to perform a hard reset, all of which have failed miserably. As I write these words,
+I am so tired that my eyes are having trouble focusing on the screen, and all of my senses feel like they have been dulled.
+
+The physical effects are the worst part; I tend to describe it as feeling like the world itself is not real.
+Every surface feels wrong, everything feels fake, the 3D space of the world begins to fold in on itself and display in 2D,
+as if someone had removed the `w` component from my eyes' perspective matrix.
+
+I am still looking for a way to manage this, as it's starting to get bad enough that I'm becoming unable to control my sleep/wake cycle.
+I was recommended light therapy by my psychiatrist, but we haven't managed to remind ourselves to buy a light box or look up resources...
+But I hate every part of this. The loneliness, our thoughts slowing down, and worst of all _the physical symptoms_.
+
+I hope I can find a way to manage this. If I do, I'll certainly write more about it.

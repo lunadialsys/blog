@@ -1,0 +1,13 @@
+---
+import Page from '../layouts/Page.astro';
+import MarkdownContent from '../components/MarkdownContent.astro';
+import Header from '../components/PostHeader.astro';
+import * as md from '../about.md';
+const content = await md.compiledContent();
+---
+<Page title={md.frontmatter.title}>
+    <Header title={md.frontmatter.title}/>
+    <MarkdownContent>
+        <Fragment set:html={content} />
+    </MarkdownContent>
+</Page>

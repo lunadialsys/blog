@@ -1,0 +1,31 @@
+---
+import type { GetStaticPaths } from "astro";
+import Page from '../layouts/Page.astro'
+import { getCollection } from "astro:content";
+import MarkdownContent from "../components/MarkdownContent.astro";
+import { render } from "astro:content";
+import { getEntry } from "astro:content";
+import PostHeader from "../components/PostHeader.astro";
+
+export const getStaticPaths = (async () => {
+	const allPosts = await getCollection('blog');
+	return allPosts.map((e: any) => ({ params: {post: e.id} }));
+}) satisfies GetStaticPaths;
+
+const {post} = Astro.params;
+const entry = await getEntry('blog', post);
+const {Content} = await render(entry!);
+---
+<Page title={entry!.data.title}>
+    <PostHeader title={entry!.data.title} post={entry} />
+    <div class="separator"/>
+    <MarkdownContent>
+        <Content />
+    </MarkdownContent>
+</Page>
+
+<style>
+.separator {
+    margin-bottom: 1.5rem;
+}
+</style>

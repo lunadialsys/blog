@@ -1,0 +1,153 @@
+---
+title: "Lunar Grimoire #1: upvalues"
+authors: [nightshade]
+tags: [english, programming, lua]
+date: 2026-09-25
+---
+※ _Note: All of the code presented within this article will be written in [Teal](https://teal-language.org)._  
+_Teal is "just Lua, but with types", so all of the code and information still applies to the base Lua language. Check Teal out, it's awesome!_
+
+Hello! This is the first post in _(what is hopefully)_ a series of articles on this blog concerning some of the internals and more obscure corners of the Lua programming language.
+Tentatively, I'm calling this series the _Lunar Grimoire_, a text that sheds light on the dark side of the moon.
+These posts are intended to be an informative resource to established Lua programmers, or those (like us) who just enjoy reading about interesting topics in programming.
+
+We have been enamored with the Lua language for well over ten years; it's a really interesting, powerful and flexible language.
+Lua is the reason we learnt how to code! It led us everywhere that we are now. And part of this was, no doubt, thanks to its slightly quirky, but incredibly deep architecture,
+that allows for a level of control that you really don't see in many other domains of programming.
+
+One of the crucial components of Lua's flexibility, in our opinion, is the concept of _upvalues_.
+This is a word that you may have seen before, in Lua circles, but its meaning may seem slightly nebulous at first; it's not a concept other languages have.
+
+However, don't worry, because upvalues are actually really simple to grasp! ...But to talk about them, we first have to talk about _closures_.
+
+## Closures and you
+Let's take the following code:
+```lua
+local n: integer = 1
+local function increment_it()
+    n = n + 1
+end
+
+print(n)
+increment_it()
+print(n)
+```
+
+When we run this program, we get the output of `1, 2`.
+When we think about what `increment_it` is doing, it's taking a variable from outside, and modifying its value.
+It "captures" the variable `n`; we refer to that action of capturing a variable as _closing over_ it, and a function that does so as a _closure_.
+
+Any function that closes over at least one value is a closure; they don't have special semantics or syntax within Lua.
+You've probably written closures before, and not even been aware of it!
+
+Closures respect the usual scoping rules when it comes time to find their values:
+```lua
+do -- This works:
+    local n: integer = 1
+    local function increment_it()
+        n = n + 1
+    end
+end
+
+-- ...but this won't even compile as Teal:
+local function increment_it()
+    n = n + 1 -- unknown variable: n
+end
+
+-- If you run this as Lua, here you would get an error:
+increment_it() -- attempt to perform arithmetic on a nil value (global 'n')
+```
+
+Nested functions will "walk" the scope upwards, to find the value to close over:
+```lua
+local n = 1
+local function one(): function()
+    local function two()
+        n = n + 1
+    end
+    return two
+end
+
+local two = one()
+two()
+print(n) -- prints '2'
+```
+
+And it doesn't matter how much later a closure runs; the values it closes over are still going to be there. They won't fall out of scope so long as the function itself exists.
+The specifics of where closure values end up are a bit odd; they don't hang around the "true" scope forever,
+instead they live in their own world only accessible to the function they belong to; we'll talk about this more in a bit.
+
+
+## What's upvalue?
+Now, we finally have all of the pieces to explain what an upvalue is!
+
+...The word "upvalue" refers to any value that is being closed over by a closure. `n` in our examples is an upvalue.
+Pretty anticlimactic, huh? But that's what I mean by it being a really simple concept.
+However, upvalues, when used well, can be incredibly powerful, and allow for some really flexible code.
+
+For instance, when constructing a metatable-based proxy object:
+```lua
+local function wrap_it(source: {any:any}): table
+    local proxy = {}
+    setmetatable(proxy, {
+        __index = function(_, key): any
+            return rawget(source, key)
+        end,
+        __newindex = function(_, key, value)
+            rawset(source, key, value)
+        end
+    })
+    return proxy
+end
+```
+We don't have to do anything special, because the metamethods on `proxy` can just grab the `source` straight out of the arguments, as an upvalue,
+because arguments are just automatically-defined local variables.
+
+Constructing wrapper proxy objects like this is something I do surprisingly often!
+In this regard, upvalues are one of our favourite features in the entire language, because they allow this and much more.
+
+
+## Cause for concern
+Take the following code:
+```lua
+local n = 1
+local function get_value(): integer, function()
+    local function increment_it()
+        n = n + 1
+    end
+    return n, increment_it
+end
+
+local the_number, increment_it = get_value()
+print(the_number) -- 1
+increment_it()
+print(the_number) -- 2, right?
+
+-- ...now fetch and print it again
+the_number = get_value()
+print(the_number) -- 3...?
+```
+
+What do we see when we run this program?
+
+You may expect to see `1, 2, 3`, but **that's not what happens**: we actually get `1, 1, 2` instead.
+
+This is because our variable `n` is closed over by the `get_value` function, creating an upvalue called `n`; and then,
+**that upvalue** is closed over by `increment_it`, defined on the inside of `get_value`. `increment_it` is _not_ modifying the `n` that we defined in the outer scope,
+but is modifying _the upvalue_ `n` that belongs to `get_value`, which is why calling `get_value` a second time returns `2`; we have to fetch the updated value from the function it belongs to.
+
+You probably won't ever run into a situation where this matters; this code is pretty hard to reason about, so this isn't a pattern that comes up very often.
+
+
+## Debug, debug, debug
+The `debug` module is one of the most interesting parts of Lua; it contains many functions that allow you to completely violate the rules of the language.
+In this regard, I tend to treat the `debug` module much like one would treat `unsafe` in Rust; it's not something you normally go near, it's not something you _need_,
+_but when you do need it, you know you need it, and it saves your life._
+
+`debug` is commonly removed from sandboxed Lua environments, and for good reason; some of the methods inside can cause _really_ weird states to occur,
+or access data that shouldn't be possible to read at all.
+
+
+## Going even deeper
+We've been through a lot so far; we've gone from explaining closures all the way to interacting with upvalues directly using the `debug` methods.
+However, we're still not done: there is one more layer to this iceberg, and it's interacting with upvalues _from the interpreter's C API_.
