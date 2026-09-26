@@ -27,6 +27,12 @@
     font-size: 18pt;
     font-weight: 400;
 }
+.md h3 {
+    margin: 1rem 0 0.5rem 0;
+    font-size: 16pt;
+    font-weight: 400;
+}
+
 .md p {
     margin: 0.5rem 0;
     line-height: 150%;
@@ -36,15 +42,23 @@
     line-height: 150%;
 }
 
+.md sup {
+    margin: 0 2pt;
+}
+.md sup>* {
+    color: var(--deemphasise);
+}
+
+/* inline code blocks */
 .md code {
-    font-size: 11pt;
     font-family: var(--font-code);
     background-color: transparent;
-    padding: 1pt 4pt;
+    padding: 0pt 4pt;
     background-color: var(--codeblock-bg-inline);
     border-radius: 6pt;
 }
 
+/* full code blocks */
 .md code>* {
     font-size: 11pt;
     font-family: var(--font-code);
@@ -72,7 +86,7 @@
     bottom: 0;
     margin-right: 10pt;
     margin-bottom: 6pt;
-    display:inline-block;
+    display: inline-block;
     color: var(--deemphasise);
     font-family: var(--font-code);
     font-size: 9pt;

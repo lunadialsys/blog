@@ -10,8 +10,10 @@ const page = Astro.props.page;
 
 <style>
 .content {
+    background-color: #00000077;
     padding: 2rem;
-    margin-bottom: 4rem;
+    margin-top: 3rem;
+    margin-bottom: 8rem;
 }
 
 .content.no-bg {
@@ -19,13 +21,12 @@ const page = Astro.props.page;
     padding: 0;
 }
 
-@media screen and (min-width: 600px) {
+@media screen and (min-width: 60rem) {
     .content {
-        background-color: #00000077;
         max-width: 60rem;
         margin-left: auto;
         margin-right: auto;
-        margin-top: 3rem;
+        position: relative;
     }
 }
 </style>

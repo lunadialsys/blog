@@ -1,0 +1,68 @@
+.note {
+    position: relative;
+    margin: 0 4pt;
+}
+
+.note>.inner {
+    display: inline-block;
+    font-size: 9pt;
+    border: 1px solid var(--deemphasise);
+    background-color: #000000aa;
+    border-radius: 4px;
+    user-select: none;
+    transform: translateY(-6pt);
+    margin: 0 0;
+    padding: 0pt 3pt;
+    line-height: 12pt;
+}
+
+.note>.bubble {
+    position: absolute;
+    left: 50%;
+    bottom: 2.5rem;
+    width: fit-content;
+    height: fit-content;
+    min-width: 20rem;
+    pointer-events: none;
+    --ypos: -10px;
+    padding: 6pt 10pt;
+    line-height: 120%;
+    font-size: 10pt;
+    animation: 300ms bubble-slide-in forwards;
+}
+
+/*
+hide the default astro footnote links
+(we can't remove the node entirely because if we do,
+the footnote definition section disappears)
+*/
+.note sup:first-of-type {
+    display: none;
+}
+
+@keyframes bubble-slide-in {
+    0% {
+        opacity: 0%;
+        transform: translate(-50%, var(--ypos));
+    }
+    100% {
+        opacity: 100%;
+        transform: translate(-50%, 0px);
+    }
+}
+
+.note>.bubble::before {
+    z-index: -1;
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000ee;
+    filter: blur(4px);
+}
+
+.note>.bubble.hidden {
+    display: none;
+}

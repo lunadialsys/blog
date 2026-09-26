@@ -4,6 +4,8 @@ authors: [nightshade]
 tags: [english, programming, lua]
 date: 2026-09-25
 ---
+import Note from '../src/components/Note.astro';
+
 ※ _Note: All of the code presented within this article will be written in [Teal](https://teal-language.org)._  
 _Teal is "just Lua, but with types", so all of the code and information still applies to the base Lua language. Check Teal out, it's awesome!_
 
@@ -75,7 +77,7 @@ print(n) -- prints '2'
 
 And it doesn't matter how much later a closure runs; the values it closes over are still going to be there. They won't fall out of scope so long as the function itself exists.
 The specifics of where closure values end up are a bit odd; they don't hang around the "true" scope forever,
-instead they live in their own world only accessible to the function they belong to; we'll talk about this more in a bit.
+instead they live in their own world only accessible to the function they belong to; we'll talk about this more later.
 
 
 ## What's upvalue?
@@ -148,7 +150,51 @@ _but when you do need it, you know you need it, and it saves your life._
 `debug` is commonly removed from sandboxed Lua environments, and for good reason; some of the methods inside can cause _really_ weird states to occur,
 or access data that shouldn't be possible to read at all.
 
+### `string.dump`
+Yeah, this function isn't part of the `debug` table at all. However, I still think it's important to bring up how it interacts
+with upvalues; well, more specifically, how it _doesn't_.
+
+`string.dump` is a standard-library function that dumps a Lua function into bytecode form.[^1]
+
+
+
+### Get and set
+The two simplest functions within `debug` for dealing with upvalues are `debug.getupvalue` and `debug.setupvalue`.
+As their names imply, they enable you to _directly_ retrieve and modify the values of upvalues, no matter what function they belong to,
+or even if it makes sense for you to be able to access them.
+
+They allow you to modify values that aren't even in your own scope at all:
+```lua
+local function factory(): function(): integer
+    local the_value = 0
+    return function(): integer
+        the_value = the_value + 1
+        return the_value
+    end
+end
+
+local n = factory()
+n()
+-- we forgot to assign the return value to a variable! how do we get the value...?
+
+-- oh, right:
+local name, value = debug.getupvalue(n, 1)
+print(name, value)
+
+debug.setupvalue(n, 1, 4)
+print(n())
+```
+This program prints `the_value, 1` and then `5`.
+As you can see, even if we aren't able to access the value directly, we can reach into the fabric of the universe and access it anyway.
+This also demonstrates how upvalues live in their own magic world ()
+
+Of course, this opens the door for all sorts of nonsense! As _a lot_ of sandboxes for Lua code are, themselves, written in Lua
+(I'll talk more about how that's possible in a bit), this allows for a very easy way to poke a hole straight through
+the carefully-constructed veil of safety. Hence, `debug` is **very dangerous** and almost always removed in the environments of untrusted Lua code.
+
 
 ## Going even deeper
 We've been through a lot so far; we've gone from explaining closures all the way to interacting with upvalues directly using the `debug` methods.
 However, we're still not done: there is one more layer to this iceberg, and it's interacting with upvalues _from the interpreter's C API_.
+
+[^1]: If you didn't know Lua is actually a compiled language, well, _now you do_.

@@ -1,0 +1,8 @@
+---
+import {PopupFootnote} from './PopupFootnote.tsx';
+
+const id = Astro.props.id;
+const ref = Astro.props['data-id'];
+
+---
+<PopupFootnote id={id} reference={ref} client:only><slot/></PopupFootnote>

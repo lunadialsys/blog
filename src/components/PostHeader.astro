@@ -1,6 +1,5 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import Sep from './PostHeaderSeparator.astro';
 const post: CollectionEntry<'blog'> = Astro.props.post;
 import PostAuthor from './PostAuthor.astro';
 import { tagColourHash } from '../utils';
@@ -15,9 +14,9 @@ const MONTHS_EN = ['January', 'February', 'March', 'April', 'June', 'July', 'Aug
         !post ? <></> :
         <div class="line">
             <span>{post.data.authors.map((e: string) => <PostAuthor name={e}/>)}</span>
-            <Sep />
+            <span class="sep">•</span>
             <span>{post.data.date.getDate()} {MONTHS_EN[post.data.date.getMonth()-1]} {post.data.date.getFullYear()}</span>
-            <Sep />
+            <span class="sep">•</span>
             <div class="tags">
                 {post.data.tags.map((e: string) => <div class="tag" style={`--tag-colour-hash: ${tagColourHash(e)};`}>
                     <span>{e}</span>
@@ -61,6 +60,12 @@ const MONTHS_EN = ['January', 'February', 'March', 'April', 'June', 'July', 'Aug
     color: black;
     padding: 1pt 3pt;
     border-radius: 4px;
+}
+
+.sep {
+    display: inline-block;
+    margin: 0 3pt 0 3pt;
+    color: #888888;
 }
 
 hr {
