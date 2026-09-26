@@ -1,6 +1,7 @@
 ---
 import {Font} from 'astro:assets';
 
+import BackgroundEffect from '../components/BackgroundEffect.astro';
 import Header from '../components/Header.astro';
 
 const title = Astro.props.title;
@@ -14,17 +15,10 @@ const titleHeader = "Luna Dial System";
         <title>{title?.length > 0 ? `${title} / ${titleHeader}` : titleHeader}</title>
     </head>
     <body data-dark>
-        <div class="background-effect" />
+        <BackgroundEffect />
         <Header />
         <slot/>
     </body>
-    <script>
-        const $ = document.querySelector.bind(document);
-        const bgElement = $('.background-effect');
-        document.addEventListener('mousemove', (ev) => {
-            bgElement?.setAttribute('style', `--x: ${ev.pageX}px`);
-        });
-    </script>
 </html>
 
 <style is:global>
@@ -74,20 +68,4 @@ a {
     color: var(--accent);
 }
 
-</style>
-
-<style>
-.background-effect {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
-    z-index: -100;
-    --x: 20px;
-    --y: 100px;
-    background: radial-gradient(circle at left var(--x) top 120%, var(--bg-hotspot) 0%, var(--bg-outer) 110%);
-}
 </style>

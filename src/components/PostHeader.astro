@@ -16,7 +16,7 @@ const MONTHS_EN = ['January', 'February', 'March', 'April', 'June', 'July', 'Aug
         <div class="line">
             <span>{post.data.authors.map((e: string) => <PostAuthor name={e}/>)}</span>
             <Sep />
-            <span>{post.data.date.getDay()} {MONTHS_EN[post.data.date.getMonth()-1]} {post.data.date.getFullYear()}</span>
+            <span>{post.data.date.getDate()} {MONTHS_EN[post.data.date.getMonth()-1]} {post.data.date.getFullYear()}</span>
             <Sep />
             <div class="tags">
                 {post.data.tags.map((e: string) => <div class="tag" style={`--tag-colour-hash: ${tagColourHash(e)};`}>

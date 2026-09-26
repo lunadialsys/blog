@@ -79,7 +79,7 @@ instead they live in their own world only accessible to the function they belong
 
 
 ## What's upvalue?
-Now, we finally have all of the pieces to explain what an upvalue is!
+With that little detour out of the way, we can finally talk about upvalues...
 
 ...The word "upvalue" refers to any value that is being closed over by a closure. `n` in our examples is an upvalue.
 Pretty anticlimactic, huh? But that's what I mean by it being a really simple concept.
@@ -137,6 +137,7 @@ This is because our variable `n` is closed over by the `get_value` function, cre
 but is modifying _the upvalue_ `n` that belongs to `get_value`, which is why calling `get_value` a second time returns `2`; we have to fetch the updated value from the function it belongs to.
 
 You probably won't ever run into a situation where this matters; this code is pretty hard to reason about, so this isn't a pattern that comes up very often.
+However, it _is_ a thing that can happen, so, uh, be careful I guess.
 
 
 ## Debug, debug, debug

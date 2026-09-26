@@ -1,0 +1,28 @@
+---
+
+---
+<div class="background-effect" />
+
+<script>
+const $ = document.querySelector.bind(document);
+const bgElement = $('.background-effect');
+document.addEventListener('mousemove', (ev) => {
+    bgElement?.setAttribute('style', `--x: ${ev.pageX}px`);
+});
+</script>
+
+<style>
+.background-effect {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    z-index: -100;
+    --x: 20px;
+    --y: 100px;
+    background: radial-gradient(circle at left var(--x) top 120%, var(--bg-hotspot) 0%, var(--bg-outer) 110%);
+}
+</style>
