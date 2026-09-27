@@ -3,6 +3,7 @@ title: "Lunar Grimoire #1: upvalues"
 authors: [nightshade]
 tags: [english, programming, lua]
 date: 2026-09-27
+foreword: More than you've (probably) ever wanted to know about the weeds of Lua's upvalues.
 ---
 ※ _Note: All of the code presented within this article will be written in [Teal](https://teal-language.org)._  
 _Teal is "just Lua, but with types", so all of the code and information still applies to the base Lua language. Check Teal out, it's awesome!_
@@ -409,7 +410,7 @@ So we can't use `debug.setupvalue`, because if we modify the value, we'll affect
 ...And that's exactly what `debug.upvaluejoin` does; it rewrites upvalue references to point to other values.
 
 The problem still remains, though, that we can't magic an upvalue out of thin air, it has to come from somewhere,
-because `upvaluejoin` takes two functions as its arguments. The solution there is very simple; we can just use a
+because `debug.upvaluejoin` takes two functions as its arguments. The solution there is very simple; we can just use a
 _lambda_/anonymous function that closes over a value we control. If we don't refer to any globals within it, it won't have an `_ENV`,
 and we can know that our chosen value will end up in its upvalue slot 1.
 

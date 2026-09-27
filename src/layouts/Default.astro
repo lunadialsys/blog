@@ -12,8 +12,13 @@ const titleHeader = "Luna Dial System";
         <Font cssVariable="--font-main" preload />
         <Font cssVariable="--font-code" />
         <slot name="fonts" />
-        <meta charset="utf-8"/>
+
         <title>{title?.length > 0 ? `${title} / ${titleHeader}` : titleHeader}</title>
+
+        <slot name="meta" />
+        <meta name="og:site_name" content={titleHeader} />
+        <meta name="theme-color" content="#332044" />
+        <meta charset="utf-8"/>
     </head>
     <body data-theme="dark">
         <BackgroundEffect />

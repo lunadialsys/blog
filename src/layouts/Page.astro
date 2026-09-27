@@ -4,6 +4,7 @@ import Default from './Default.astro';
 import ContentHolder from '../components/ContentHolder.astro';
 ---
 <Default title={Astro.props.title}>
+    <slot name="meta" slot="meta" />
     <Font cssVariable="--font-icons" preload slot="fonts" />
     <ContentHolder page>
         <slot/>

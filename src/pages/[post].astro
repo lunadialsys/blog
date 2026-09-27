@@ -19,8 +19,15 @@ const entry = await getEntry('blog', post);
 const {Content} = await render(entry!);
 
 ---
-<Page title={entry!.data.title}>
-    <PostHeader title={entry!.data.title} post={entry} />
+<Page title={entry?.data.title}>
+    <meta name="og:title" content={`${entry?.data.title}`} slot="meta"/>
+    {
+        entry?.data.foreword ? 
+            <meta name="og:description" content={`${entry?.data.foreword}`} slot="meta"/>
+            : <></>
+    }
+    
+    <PostHeader title={entry?.data.title} post={entry} />
     <div class="separator"/>
     <MarkdownContent>
         <Content components={{
