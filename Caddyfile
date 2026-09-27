@@ -1,0 +1,5 @@
+:8080 {
+    root * /content
+    encode
+    file_server
+}
