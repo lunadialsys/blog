@@ -2,7 +2,7 @@
 title: "Lunar Grimoire #1: upvalues"
 authors: [nightshade]
 tags: [english, programming, lua]
-date: 2026-09-25
+date: 2026-09-27
 ---
 ※ _Note: All of the code presented within this article will be written in [Teal](https://teal-language.org)._  
 _Teal is "just Lua, but with types", so all of the code and information still applies to the base Lua language. Check Teal out, it's awesome!_
@@ -242,8 +242,8 @@ with upvalues; well, rather, how it _doesn't_.
 It's situational, but useful when you need it; the bytecode it produces is the same as the one produced by `luac`,
 the standalone command-line compiler that probably came with your Lua installation.
 
-Bytecode returned by `string.dump` can be loaded with, well, `load`, but - since it's a newly-created function - all of the
-loaded function's environment will be reset. This includes upvalues. `string.dump`ing a function will not preserve the upvalues.
+Bytecode returned by `string.dump` can be loaded with, well, the function called `load`, but - since it's a newly-created function - all of the
+loaded function's environment will be reset. This includes upvalues; `string.dump`ing a function will not preserve any of the upvalue references it has.
 Their _names_ will be kept, but not the data they hold.
 
 Now, `string.dump` actually takes _two_ arguments: the function, and an optional boolean called `strip`, which causes
@@ -311,8 +311,7 @@ we also leave its environment, and return to its previous one as the stack unwin
 Well, uh, you might already have been able to see where I'm going with this, but... yeah, the environment is an upvalue.
 
 More specifically, `_ENV` is an upvalue of any function _that refers to any global variable_. That part's important,
-because a function that _doesn't_ refer to any global variables _will not have an upvalue reference to an `_ENV`_.
-
+because a function that _doesn't_ refer to any global variables _will not have an upvalue reference to an `_ENV`_. 
 What actually happens is that when resolving the function's environment, Lua walks the stack upwards and uses the
 _first_ `_ENV` it finds, i.e. the one in the closest scope to the scope accessing the global.
 Usually, this is the `_ENV` that is automatically defined by Lua when it loads the initial chunk, which results in
@@ -336,7 +335,7 @@ local function load(src: string, fn: string, mode: string, env: table)
 end
 ```
 
-Knowing this, we can reimplement `getfenv` as follows, by just searching through the function until we find the `_ENV` upvalue.
+Knowing that `_ENV` is just an upvalue, we can reimplement `getfenv` as follows, by just searching through the function until we find it.
 ```lua
 local type AnyFunction = function(...: any): any...
 local type Environment<T> = {string:any}
@@ -419,8 +418,7 @@ Here's mine:
 ```lua
 local type AnyFunction = function(...: any): any...
 local type Environment<T> = {string:any}
-local type SetfenvArgument = AnyFunction | integer
-local function setfenv<T is SetfenvArgument>(func: T, new_env: Environment<T>): AnyFunction | nil
+local function setfenv<T is AnyFunction>(func: T | integer, new_env: Environment<T>): AnyFunction | nil
     local n = 1
     local name: string
 
@@ -481,7 +479,8 @@ I guess that's how it is when you're passionate about something... Lua is one of
 more content like this about it in the future.
 
 The primary reference used when writing this article was [the _Lua 5.4 Reference Manual_](https://www.lua.org/manual/5.4/manual.html)
-by Ierusalimschy, de Figuereido, and Celes.
+by Ierusalimschy, de Figuereido, and Celes. Special thanks also go to Leaf Corcoran (aka _leafo_) for
+[this blog post about reimplementing get/setfenv](https://leafo.net/guides/setfenv-in-lua52-and-above.html). My approach is partly based on Leaf's.
 
 All of the code examples inside of this article can be assumed to be licensed under the [Creative Commons Zero 1.0](https://creativecommons.org/publicdomain/zero/1.0/) license,
 and is thus placed in the public domain. My words, on the other hand, _aren't_, and I would appreciate links back to this blog post instead of quoting it verbatim;
