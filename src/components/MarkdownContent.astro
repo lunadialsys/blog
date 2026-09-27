@@ -23,12 +23,12 @@
     font-weight: 400;
 }
 .md h2 {
-    margin: 1.5rem 0 0.5rem 0;
+    margin: 2rem 0 0.5rem 0;
     font-size: 18pt;
     font-weight: 400;
 }
 .md h3 {
-    margin: 1rem 0 0.5rem 0;
+    margin: 1.5rem 0 0.5rem 0;
     font-size: 16pt;
     font-weight: 400;
 }
@@ -82,6 +82,14 @@
     margin-top: 0;
 }
 
+.astro-code {
+    background-color: var(--codeblock-bg) !important;
+
+    span {
+        background-color: transparent !important;
+    }
+}
+
 .codeblock {
     position: relative;
     margin-top: 1rem;
@@ -108,17 +116,7 @@
 </style>
 
 <style is:global>
-body[data-dark] {
-    .astro-code {
-        background-color: var(--codeblock-bg-dark) !important;
-    }
-
-    .astro-code span {
-        background-color: transparent !important;
-    }
-}
-
-body[data-light] {
+body[data-theme="light"] {
     .astro-code,
     .astro-code span {
         color: var(--shiki-light) !important;

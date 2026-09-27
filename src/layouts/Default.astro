@@ -7,7 +7,7 @@ import Header from '../components/Header.astro';
 const title = Astro.props.title;
 const titleHeader = "Luna Dial System";
 ---
-<html lang="en">
+<html>
     <head>
         <Font cssVariable="--font-main" preload />
         <Font cssVariable="--font-code" />
@@ -15,7 +15,7 @@ const titleHeader = "Luna Dial System";
         <meta charset="utf-8"/>
         <title>{title?.length > 0 ? `${title} / ${titleHeader}` : titleHeader}</title>
     </head>
-    <body data-dark>
+    <body data-theme="dark">
         <BackgroundEffect />
         <Header />
         <slot/>
@@ -36,7 +36,7 @@ body {
     --codeblock-bg-inline-dark: #222222aa;
 }
 
-body[data-dark] {
+body[data-theme="dark"] {
     --text: var(--text-dark);
     --deemphasise: var(--deemphasise-dark);
     --accent: var(--accent-dark);

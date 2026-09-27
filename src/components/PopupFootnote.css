@@ -1,28 +1,29 @@
 .note {
     position: relative;
-    margin: 0 4pt;
+    margin: 0 2pt;
 }
 
 .note>.inner {
     display: inline-block;
-    font-size: 9pt;
+    font-size: 8pt;
     border: 1px solid var(--deemphasise);
     background-color: #000000aa;
     border-radius: 4px;
     user-select: none;
-    transform: translateY(-6pt);
+    transform: translateY(-4pt);
     margin: 0 0;
-    padding: 0pt 3pt;
-    line-height: 12pt;
+    padding: 0pt 2pt;
+    line-height: 10pt;
 }
 
 .note>.bubble {
     position: absolute;
     left: 50%;
-    bottom: 2.5rem;
-    width: fit-content;
+    bottom: 1.5rem;
+    width: max-content;
     height: fit-content;
     min-width: 20rem;
+    max-width: 35rem;
     pointer-events: none;
     --ypos: -10px;
     padding: 6pt 10pt;

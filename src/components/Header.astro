@@ -4,20 +4,33 @@
 <div class="header-container">
     <div>
         <a class="header-big" href="/">Luna Dial System</a>
-        <a class="header-line" href="/">Neurodiversity, multiplicity, gender transition, and .NET</a>
+        <a class="header-line" href="/">Writing about neurodiversity and programming</a>
     </div>
-    <div style="flex-grow: 1;"></div>
+    <div class="grow"></div>
     <div class="header-inner">
         <a href="/about">About us</a>
-        <div class="lang-select">
+        <!-- <div class="lang-select">
             <a data-selected>English</a>
             <span class="sep"></span>
             <a>Italiano</a>
-        </div>
+        </div> -->
     </div>
 </div>
 
+<style is:global>
+@media screen and (max-width: 600px) {
+    .header-container>.grow {
+        display: none !important; 
+    }
+
+    .header-container .header-inner {
+        display: none !important;
+    }
+}
+</style>
+
 <style>
+
 .header-container {
     color: var(--text);
     position: relative;
@@ -29,8 +42,12 @@
     font-weight: 300;
     overflow-x: hidden;
 
-    --header-font-size: 36pt;
-    --inner-font-size: 15pt;
+    --header-font-size: 24pt;
+    --inner-font-size: 13pt;
+}
+
+.header-container .grow {
+    flex-grow: 1;
 }
 
 .header-container a {
@@ -123,7 +140,7 @@
     font-size: var(--header-font-size);
     margin: 0;
     font-weight: 300;
-    transform: translate(-4px);
+    transform: translate(-3px);
     display: block;
 }
 

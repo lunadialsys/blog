@@ -79,7 +79,9 @@ instead they live in their own world only accessible to the function they belong
 
 
 ## What's upvalue?
-With that little detour out of the way, we can finally talk about upvalues...
+_~~Nothing much, what's up with you?~~_
+
+With that little detour out of the way, we can finally talk about upvalues proper.
 
 ...The word "upvalue" refers to any value that is being closed over by a closure. `n` in our examples is an upvalue.
 Pretty anticlimactic, huh? But that's what I mean by it being a really simple concept.
@@ -134,7 +136,7 @@ You may expect to see `1, 2, 3`, but **that's not what happens**: we actually ge
 
 This is because our variable `n` is closed over by the `get_value` function, creating an upvalue called `n`; and then,
 **that upvalue** is closed over by `increment_it`, defined on the inside of `get_value`. `increment_it` is _not_ modifying the `n` that we defined in the outer scope,
-but is modifying _the upvalue_ `n` that belongs to `get_value`, which is why calling `get_value` a second time returns `2`; we have to fetch the updated value from the function it belongs to.
+but is modifying _the upvalue_ `n` that belongs to `get_value`, which is why calling `get_value` a second time returns `2`; we have to fetch the updated value from the function it belongs to.[^1]
 
 You probably won't ever run into a situation where this matters; this code is pretty hard to reason about, so this isn't a pattern that comes up very often.
 However, it _is_ a thing that can happen, so, uh, be careful I guess.
@@ -148,7 +150,7 @@ _but when you do need it, you know you need it, and it saves your life._
 `debug` is commonly removed from sandboxed Lua environments, for reasons that will become apparent very shortly.
 
 
-### Get and set
+## Get and set
 The two simplest functions within `debug` for dealing with upvalues are `debug.getupvalue` and `debug.setupvalue`.
 As their names imply, they enable you to _directly_ retrieve and modify the values of upvalues, without caring about what function they belong to,
 or even if it makes sense for you to be able to access them.
@@ -183,11 +185,60 @@ Of course, this opens the door for all sorts of nonsense! As _a lot_ of sandboxe
 the carefully-constructed veil of safety. Hence, `debug` is **very dangerous** and almost always removed in the environments of untrusted Lua code.
 
 
-### `string.dump`
+## Together forever
+Identically-named upvalues are not the same, because upvalues are tied to scope and not name. For instance:
+
+```lua
+local function factory(): function(): integer
+    local the_value = 0
+    return function(): integer
+        the_value = the_value + 1
+        return the_value
+    end
+end
+
+local one, two = factory(), factory()
+assert(one ~= two)
+
+print(one(), two())
+```
+
+`one` and `two` are not the same function, and they both close over a value named `the_value`,
+but the values they close over refer to _different variables_. There's two variables, both named `the_value`, and they aren't the same,
+so this program will print `1, 1`. From now on, I'll refer to the concept of "the specific local variable my upvalue is referring to" as an _upvalue reference_.
+(You can think about it as a pointer.)
+
+There may be rare occasions where this isn't what you want; there's a tool to solve this, `debug.upvaluejoin`.
+That function copies across an upvalue reference from one function to another, so "joining" them together.
+You can use it to join the behaviour of two functions; let's modify the previous example:
+```lua
+local one, two = factory(), factory()
+-- debug.upvaluejoin(to, to_index, from, from_index)
+debug.upvaluejoin(two, 1, one, 1)
+
+print(one(), two())
+```
+
+This program now prints `1, 2` because the first upvalue reference of `two` is now the same as the first upvalue reference of `one`, so
+they are both pointing to the same variable, and thus, modifying the same value.
+
+
+## Can I see your ID?
+There is one more upvalue-related function in the `debug` table, `debug.upvalueid`. It isn't terribly useful, so I'll be brief.
+
+This function does exactly one thing: returns the actual upvalue reference at the specified index for the function you give it.
+That's to say, if two functions refer to the same local variable, `debug.upvalueid(one, index) == debug.upvalueid(two, index)` will be true.
+
+What `debug.setupvalue` actually returns is... uh, a raw pointer. Well, more specifically, a type called a "light userdata",
+which is itself just a C pointer. Unfortunately, you can't do anything too interesting with these from the confines of just Lua,
+even with the other methods inside of the `debug` table.[^2]
+
+
+## `string.dump`
 Yeah, this function isn't part of the `debug` table at all. However, I still think it's important to bring up how it interacts
 with upvalues; well, rather, how it _doesn't_.
 
-`string.dump` is a standard-library function that dumps a Lua function into bytecode form.[^1]
+`string.dump` is a standard-library function that dumps a Lua function into bytecode form.[^3]
 It's situational, but useful when you need it; the bytecode it produces is the same as the one produced by `luac`,
 the standalone command-line compiler that probably came with your Lua installation.
 
@@ -220,22 +271,237 @@ local newname, newvalue = debug.getupvalue(n2, 1)
 print(newname, newvalue)
 ```
 
-If we run this, we get the output of `the_value, 1` as we expect, and then `(no name), table: <some pointer>`.
+`n2` here is a copy of our `n` function, so it should have the exact same upvalues.
+We can verify this by running the program, and when we do, we get the output of `the_value, 1` as we expect,
+and then... uh, `(no name), table: <some pointer>`.
 
-...Wait, wait, _what?_ Excuse me? _Table?_ What's that doing there?
-This is the same function, it has the same upvalues! _So why has upvalue 1 turned into a table?_
+...Wait, _what?_ Excuse me? _Table?_
 
-### The ghost of setfenv past
+
+## The ghost of `setfenv` past
 If you've been around the Lua block for a while, you probably know that in older versions of the language,
 there used to be a pair of functions called `setfenv` and `getfenv`. These stand for "**set**/**get** **f**unction **env**ironment",
-but haven't been relevant since 5.2, which is when they were removed from the standard library.
+but haven't been relevant for a while, as they were removed from the standard library. They were quite powerful, as
+they allowed the Lua programmer to completely override the environment of an individual function, walling it off from the rest of the program.
 
-They were _incredibly_ powerful, acting in a similar way to the fourth argument of `load`, enabling the possibility of walling off
-a function _entirely_ from the rest of your program's environment; a dream for sandboxing, in other words.
+As a Lua programmer, you're probably also aware of the `_G` table: the global environment for the whole program.
+All globals defined in the program end up in there, and the whole of the standard library also exists within it.
+`_G` has existed since at least Lua 5.1,[^4] but what you might not know is that - in newer versions of Lua - it has a cousin.
+
+In Lua 5.2, the way that the global environment worked got redone; while previously you could just use `setfenv` and `getfenv` to control the environment,
+5.2 cut both of them _entirely_. This presented an issue, as sandboxing was done with setfenv; of course, there had to be a replacement.
+
+So, enter `_ENV`.
+
+`_ENV` is a table that contains the current function's _local_ environment. Instead of modifying the entire global environment,
+using `_ENV` lets you modify what resources a function has access to on a granular basis. It works like this:
+```lua
+local function test(): function() | nil
+    local _ENV = {}
+    return print
+end
+print(test())
+```
+You'll get `nil` here, because the function's environment has been overwritten, and so the `print` function stopped existing within it.
+We can use it again outside of the `test` function, because environments are lexically scoped; when we leave the function's scope,
+we also leave its environment, and return to its previous one as the stack unwinds. In this case, that's the default global environment.
+
+...But, wait, if I said `_ENV` is a table, why are we defining it with `local`? Shouldn't it already exist, like `_G` does?
+
+Well, uh, you might already have been able to see where I'm going with this, but... yeah, the environment is an upvalue.
+
+More specifically, `_ENV` is an upvalue of any function _that refers to any global variable_. That part's important,
+because a function that _doesn't_ refer to any global variables _will not have an upvalue reference to an `_ENV`_.
+
+What actually happens is that when resolving the function's environment, Lua walks the stack upwards and uses the
+_first_ `_ENV` it finds, i.e. the one in the closest scope to the scope accessing the global.
+Usually, this is the `_ENV` that is automatically defined by Lua when it loads the initial chunk, which results in
+the scope's environment being the global environment that we're all used to.
+
+When creating a new chunk, you can use the fourth argument of the `load` function to control the `_ENV`:
+```lua
+local v = load('return f', '', 't', {f = 25} as table)
+print(v()) -- 25
+```
+
+More or less, what load does in this case is this:
+```lua
+-- this is not real code because `load` is implemented in C
+local function load(src: string, fn: string, mode: string, env: table)
+    -- ...
+    local _ENV = env
+    return function(...)
+        -- ...
+    end
+end
+```
+
+Knowing this, we can reimplement `getfenv` as follows, by just searching through the function until we find the `_ENV` upvalue.
+```lua
+local type AnyFunction = function(...: any): any...
+local type Environment<T> = {string:any}
+local function getfenv<T is AnyFunction>(func: T): Environment<T> | nil
+    local n = 1
+    local name, value: string, any
+    repeat
+        name, value = debug.getupvalue(func as function(), n)
+        if name == '_ENV' then
+            return value as Environment<T>
+        end
+        n = n + 1
+    until not name
+end
+
+global number = 0
+local function test()
+    number = number + 1
+end
+print(getfenv(test) == _G) -- true
+```
+
+Pretty straight-forward, huh? That does still leave the problem of `setfenv`, though.
 
 
-## Going even deeper
-We've been through a lot so far; we've gone from explaining closures all the way to interacting with upvalues directly using the `debug` methods.
-However, we're still not done: there is one more layer to this iceberg, and it's interacting with upvalues _from the interpreter's C API_.
+## The ghost of `setfenv` present
+We can't talk about getfenv without talking about setfenv, so let's do as we did previously, and try to reimplement it.
 
-[^1]: If you didn't know that Lua is actually a compiled language, you do now.
+Of course, if getting the environment was just as simple as scanning through the upvalues until we find the right one,
+it would logically follow that directly controlling the environment is as simple as doing something like this:
+```lua
+local function set_env(func: function(), new_env: table)
+    local n = 1
+    local name: string
+    repeat
+        name = debug.getupvalue(func, n)
+        if name == '_ENV' then
+            debug.setupvalue(func, n, new_env)
+        end
+        n = n + 1
+    until not name
+end
+
+local function test()
+    print('test!')
+end
+set_env(test, {
+    print = function(n: string)
+        print('got our value: ' .. n)
+    end
+})
+print('testing:')
+test()
+```
+
+Well, if you run the above program, you'll quickly find a problem. Rather, the problem is quite _slow_, because the program will spin for a while,
+before dying with a stack overflow error. So we're causing infinite recursion somehow.
+
+The easy answer here is that by calling `print` within `print`, inside our `print` function Lua finds the local environment, finds `print` within it and calls it,
+which would seem like a perfectly plausible explanation for why this is an infinitely-recursive loop.
+...But that's also not what's happening here, because our new `print` function isn't defined inside of the scope of the `test` function, so the environment doesn't apply to it.
+No, the real problem is significantly sneakier.
+
+The actual problem is that _upvalue references can be shared between functions_, as we touched on earlier when we went over `debug.upvaluejoin`.
+The interpreter takes the easy route and doesn't _copy_ the environment into the new function's upvalue, instead it just grabs a _reference_ to it.
+So, by editing the `_ENV` of our `test` function, we're inadvertently editing _our own global environment_, because that's what it points to.
+That means we've successfully overwritten our global environment with one that holds nothing except a `print` function that calls itself forever;
+the infinite loop doesn't even occur inside of `test`, it occurs in the call to `print` right before it.
+
+So we can't use `debug.setupvalue`, because if we modify the value, we'll affect _everything_. We need to rewrite its reference.
+...And that's exactly what `debug.upvaluejoin` does; it rewrites upvalue references to point to other values.
+
+The problem still remains, though, that we can't magic an upvalue out of thin air, it has to come from somewhere,
+because `upvaluejoin` takes two functions as its arguments. The solution there is very simple; we can just use a
+_lambda_/anonymous function that closes over a value we control. If we don't refer to any globals within it, it won't have an `_ENV`,
+and we can know that our chosen value will end up in its upvalue slot 1.
+
+With this newfound knowledge, we have all of the pieces that we need to create our own `setfenv`.[^5]  
+Here's mine:
+```lua
+local type AnyFunction = function(...: any): any...
+local type Environment<T> = {string:any}
+local type SetfenvArgument = AnyFunction | integer
+local function setfenv<T is SetfenvArgument>(func: T, new_env: Environment<T>): AnyFunction | nil
+    local n = 1
+    local name: string
+
+    -- setfenv's first argument can be either a function or a stack index:
+    local target: function()
+    if type(func) == 'function' then
+        target = func as AnyFunction
+    else
+        local i = func as integer
+        local fn = debug.getinfo(i + 1, 'f')
+        target = fn.func as AnyFunction
+    end
+    if not target then return nil end
+
+    -- never called; this function only serves as upvalue storage
+    -- and returns `new_env` so we can be sure it closes over it
+    local helper = function(): any return new_env end
+
+    repeat
+        name = debug.getupvalue(target, n)
+        if name == '_ENV' then
+            debug.upvaluejoin(target, n, helper, 1)
+        end
+        n = n + 1
+    until not name
+
+    return target
+end
+
+local function test()
+    print('test!')
+end
+setfenv(test, {
+    print = function(n: string)
+        print('print called: ' .. n)
+    end
+})
+print('testing...')
+test()
+```
+
+And if we run this program, sure enough, we see `testing... print called: test!`, just as we would expect.
+The function `test`'s environment contains nothing (not even `_VERSION`) aside from our replaced `print` function. Success!
+
+
+## Conclusion
+With that, we've finally reached the end of our journey on the dark side of the moon, for now.
+I hope you learnt something fun, and I hope my writing was entertaining enough to hold your interest.
+
+If you enjoyed this post, please share it around with people that you think might find it interesting!
+And please, let me know in the comments if this post has helped you.
+I would be touched if this series becomes an actual resource that people refer to, and I'm trying to make it possible by writing high-quality content;
+let me know how I did by writing a comment or reaching out to us.
+
+This post turned out to be unexpectedly long and wordy! I was really thinking I'd be done with it a lot sooner,
+but I just kept finding new things to talk about. Originally, I even wanted to make it _even longer_ by talking about upvalues in the C API, but if I kept going, I'd never finish.
+I guess that's how it is when you're passionate about something... Lua is one of our favourite languages, and we want to create
+more content like this about it in the future.
+
+The primary reference used when writing this article was [the _Lua 5.4 Reference Manual_](https://www.lua.org/manual/5.4/manual.html)
+by Ierusalimschy, de Figuereido, and Celes.
+
+All of the code examples inside of this article can be assumed to be licensed under the [Creative Commons Zero 1.0](https://creativecommons.org/publicdomain/zero/1.0/) license,
+and is thus placed in the public domain. My words, on the other hand, _aren't_, and I would appreciate links back to this blog post instead of quoting it verbatim;
+therefore, the actual contents of the article (that aren't code) are placed under [Creative Commons BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
+
+Large language models were not used to produce any of the writing or code present in this article; everything is human-authored.
+
+**Thank you very much for reading!** 💜
+    _~Nightshade, Luna Dial System_
+
+
+[^1]: Lua tries to avoid copying by reference as much as possible.
+
+[^2]: Calling `debug.setuservalue` results in `bad argument #1 to 'setuservalue' (userdata expected, got light userdata)`.
+Note that you **cannot** tell the difference between light userdata and "heavy" userdata, because `type()` will just say `userdata`.
+<span class="deemphasise">Well, you _could_ by using `pcall` and catching the error, but... why?</span>
+
+[^3]: If you didn't know that Lua is actually a compiled language, you do now.
+
+[^4]: We've never written code for versions of Lua older than 5.1, so I don't actually know when `_G` was introduced. I believe it was in 5.0, though.
+
+[^5]: The real `setfenv` can also take a stack index. We can replicate this with `debug.getinfo`, and I do it here for completeness' sake,
+but a replacement doesn't need to be _quite_ this wordy.
