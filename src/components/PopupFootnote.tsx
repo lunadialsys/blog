@@ -2,7 +2,7 @@ import { useState } from 'preact/hooks';
 import './PopupFootnote.css';
 import type { JSX } from 'preact/jsx-runtime';
 
-export function PopupFootnote(props: {id: string, reference: string, children: JSX.Element[]}) {
+export function PopupFootnote(props: {id: string, children: JSX.Element[]}) {
     let [hovered, setHovered] = useState(false);
     
     return (<>
@@ -10,7 +10,7 @@ export function PopupFootnote(props: {id: string, reference: string, children: J
             aria-describedby="footnote-label">
             <span class="inner"
                 onMouseEnter={() => { setHovered(true); }}
-                onMouseLeave={() => { setHovered(false); }}>{props.reference}</span>
+                onMouseLeave={() => { setHovered(false); }}>{props.id}</span>
             <div class={hovered ? 'bubble' : 'bubble hidden'}>
                 <span>{props.children}</span>
             </div>

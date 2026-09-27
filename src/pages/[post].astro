@@ -7,6 +7,7 @@ import { render } from "astro:content";
 import { getEntry } from "astro:content";
 import PostHeader from "../components/PostHeader.astro";
 import Note from "../components/Note.astro";
+import Heading from "../components/Heading.astro";
 
 export const getStaticPaths = (async () => {
 	const allPosts = await getCollection('blog');
@@ -16,12 +17,16 @@ export const getStaticPaths = (async () => {
 const {post} = Astro.params;
 const entry = await getEntry('blog', post);
 const {Content} = await render(entry!);
+
 ---
 <Page title={entry!.data.title}>
     <PostHeader title={entry!.data.title} post={entry} />
     <div class="separator"/>
     <MarkdownContent>
-        <Content components={{ldnote: Note}} />
+        <Content components={{
+            ldnote: Note,
+            ldheading: Heading
+        }} />
     </MarkdownContent>
 </Page>
 

@@ -4,8 +4,6 @@ authors: [nightshade]
 tags: [english, programming, lua]
 date: 2026-09-25
 ---
-import Note from '../src/components/Note.astro';
-
 ※ _Note: All of the code presented within this article will be written in [Teal](https://teal-language.org)._  
 _Teal is "just Lua, but with types", so all of the code and information still applies to the base Lua language. Check Teal out, it's awesome!_
 
@@ -147,20 +145,12 @@ The `debug` module is one of the most interesting parts of Lua; it contains many
 In this regard, I tend to treat the `debug` module much like one would treat `unsafe` in Rust; it's not something you normally go near, it's not something you _need_,
 _but when you do need it, you know you need it, and it saves your life._
 
-`debug` is commonly removed from sandboxed Lua environments, and for good reason; some of the methods inside can cause _really_ weird states to occur,
-or access data that shouldn't be possible to read at all.
-
-### `string.dump`
-Yeah, this function isn't part of the `debug` table at all. However, I still think it's important to bring up how it interacts
-with upvalues; well, more specifically, how it _doesn't_.
-
-`string.dump` is a standard-library function that dumps a Lua function into bytecode form.[^1]
-
+`debug` is commonly removed from sandboxed Lua environments, for reasons that will become apparent very shortly.
 
 
 ### Get and set
 The two simplest functions within `debug` for dealing with upvalues are `debug.getupvalue` and `debug.setupvalue`.
-As their names imply, they enable you to _directly_ retrieve and modify the values of upvalues, no matter what function they belong to,
+As their names imply, they enable you to _directly_ retrieve and modify the values of upvalues, without caring about what function they belong to,
 or even if it makes sense for you to be able to access them.
 
 They allow you to modify values that aren't even in your own scope at all:
@@ -186,15 +176,66 @@ print(n())
 ```
 This program prints `the_value, 1` and then `5`.
 As you can see, even if we aren't able to access the value directly, we can reach into the fabric of the universe and access it anyway.
-This also demonstrates how upvalues live in their own magic world ()
+This also demonstrates how upvalues live in their own magic world, and that even if inaccessible, their values are preserved.
 
 Of course, this opens the door for all sorts of nonsense! As _a lot_ of sandboxes for Lua code are, themselves, written in Lua
 (I'll talk more about how that's possible in a bit), this allows for a very easy way to poke a hole straight through
 the carefully-constructed veil of safety. Hence, `debug` is **very dangerous** and almost always removed in the environments of untrusted Lua code.
 
 
+### `string.dump`
+Yeah, this function isn't part of the `debug` table at all. However, I still think it's important to bring up how it interacts
+with upvalues; well, rather, how it _doesn't_.
+
+`string.dump` is a standard-library function that dumps a Lua function into bytecode form.[^1]
+It's situational, but useful when you need it; the bytecode it produces is the same as the one produced by `luac`,
+the standalone command-line compiler that probably came with your Lua installation.
+
+Bytecode returned by `string.dump` can be loaded with, well, `load`, but - since it's a newly-created function - all of the
+loaded function's environment will be reset. This includes upvalues. `string.dump`ing a function will not preserve the upvalues.
+Their _names_ will be kept, but not the data they hold.
+
+Now, `string.dump` actually takes _two_ arguments: the function, and an optional boolean called `strip`, which causes
+it to produce significantly less bytecode... _but_ at the cost of losing the names of all of the function's upvalues.
+Losing the upvalues' names means that `debug.getupvalue` will always return a "no name" value as its first return value.
+
+We can prove this easily with the following code:
+```lua
+local function factory(): function(): integer
+    local the_value = 0
+    return function(): integer
+        the_value = the_value + 1
+        return the_value
+    end
+end
+
+local n = factory()
+n()
+
+local name, value = debug.getupvalue(n, 1)
+print(name, value)
+
+local n2 = load(string.dump(n, true))
+local newname, newvalue = debug.getupvalue(n2, 1)
+print(newname, newvalue)
+```
+
+If we run this, we get the output of `the_value, 1` as we expect, and then `(no name), table: <some pointer>`.
+
+...Wait, wait, _what?_ Excuse me? _Table?_ What's that doing there?
+This is the same function, it has the same upvalues! _So why has upvalue 1 turned into a table?_
+
+### The ghost of setfenv past
+If you've been around the Lua block for a while, you probably know that in older versions of the language,
+there used to be a pair of functions called `setfenv` and `getfenv`. These stand for "**set**/**get** **f**unction **env**ironment",
+but haven't been relevant since 5.2, which is when they were removed from the standard library.
+
+They were _incredibly_ powerful, acting in a similar way to the fourth argument of `load`, enabling the possibility of walling off
+a function _entirely_ from the rest of your program's environment; a dream for sandboxing, in other words.
+
+
 ## Going even deeper
 We've been through a lot so far; we've gone from explaining closures all the way to interacting with upvalues directly using the `debug` methods.
 However, we're still not done: there is one more layer to this iceberg, and it's interacting with upvalues _from the interpreter's C API_.
 
-[^1]: If you didn't know Lua is actually a compiled language, well, _now you do_.
+[^1]: If you didn't know that Lua is actually a compiled language, you do now.

@@ -1,10 +1,12 @@
 import { defineConfig, fontProviders } from 'astro/config';
-import {satteri} from '@astrojs/markdown-satteri';
-import satteriCodeblockPlugin from './src/plugins/codeblocks.ts';
+import { satteri, satteriHeadingIdsPlugin } from '@astrojs/markdown-satteri';
 
 import shikiThemeDark from '@shikijs/themes/github-dark';
 import shikiThemeLight from '@shikijs/themes/github-light';
+
+import parseCodeblocks from './src/plugins/codeblocks.ts';
 import {parseFootnotes, parseFootnoteDefinitions} from './src/plugins/footnotes.ts';
+import parseHeadings from './src/plugins/headings.ts';
 
 import mdx from '@astrojs/mdx';
 
@@ -22,6 +24,11 @@ export default defineConfig({
           name: 'JetBrains Mono',
           cssVariable: '--font-code',
           provider: fontProviders.google()
+      },
+      {
+          name: 'Material Symbols Outlined',
+          cssVariable: '--font-icons',
+          provider: fontProviders.googleicons()
       }
   ],
 
@@ -44,8 +51,15 @@ export default defineConfig({
       },
       processor: satteri({
           features: {gfm: true, smartPunctuation: false},
-          mdastPlugins: [parseFootnoteDefinitions(), parseFootnotes()],
-          hastPlugins: [satteriCodeblockPlugin()]
+          mdastPlugins: [
+              parseFootnoteDefinitions(),
+              parseFootnotes()
+          ],
+          hastPlugins: [
+              parseCodeblocks(),
+              satteriHeadingIdsPlugin(),
+              parseHeadings()
+          ]
       }),
   },
 

@@ -10,7 +10,8 @@ const titleHeader = "Luna Dial System";
 <html lang="en">
     <head>
         <Font cssVariable="--font-main" preload />
-        <Font cssVariable="--font-code"/>
+        <Font cssVariable="--font-code" />
+        <slot name="fonts" />
         <meta charset="utf-8"/>
         <title>{title?.length > 0 ? `${title} / ${titleHeader}` : titleHeader}</title>
     </head>
@@ -43,6 +44,10 @@ body[data-dark] {
     --bg-hotspot: var(--bg-hotspot-dark);
     --codeblock-bg: var(--codeblock-bg-dark);
     --codeblock-bg-inline: var(--codeblock-bg-inline-dark);
+}
+
+.icon {
+    font-family: var(--font-icons);
 }
 
 .deemphasise {

@@ -1,7 +1,7 @@
 import { defineHastPlugin } from 'satteri';
 import {h} from 'hastscript';
 
-export default function codeblockPlugin() {
+export default function() {
     return defineHastPlugin({
         name: 'wrap-code-blocks',
         element: {
