@@ -7,15 +7,15 @@ import Header from '../components/Header.astro';
 const title = Astro.props.title;
 const titleHeader = "Luna Dial System";
 import {ClientRouter} from 'astro:transitions';
+
+import '@fontsource/lato';
+import '@fontsource-variable/jetbrains-mono';
+import '@fontsource-variable/material-symbols-outlined';
+
 ---
 <html transition:name="root" transition:animate="none">
     <head>
-        <Font cssVariable="--font-main" preload />
-        <Font cssVariable="--font-code" />
-        <slot name="fonts" />
-
         <title>{title?.length > 0 ? `${title} / ${titleHeader}` : titleHeader}</title>
-
         <slot name="meta" />
         <meta name="og:site_name" content={titleHeader} />
         <meta name="theme-color" content="#332044" />
@@ -51,6 +51,12 @@ body {
     
     --c-nightshade: oklch(0.3121 0.069 307);
     --c-crescent: oklch(0.3528 0.049 238.12);
+}
+
+:root {
+    --font-main: "Lato", sans-serif;
+    --font-code: "JetBrains Mono", monospace;
+    --font-icons: "Material Symbols Outlined Variable";
 }
 
 body[data-theme="dark"] {

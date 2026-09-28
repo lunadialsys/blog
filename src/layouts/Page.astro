@@ -3,9 +3,8 @@ import {Font} from 'astro:assets';
 import Default from './Default.astro';
 import ContentHolder from '../components/ContentHolder.astro';
 ---
-<Default title={Astro.props.title} author={Astro.props.author}>
+<Default {...Astro.props}>
     <slot name="meta" slot="meta" />
-    <Font cssVariable="--font-icons" preload slot="fonts" />
     <ContentHolder page>
         <slot/>
     </ContentHolder>

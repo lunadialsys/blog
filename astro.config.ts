@@ -15,27 +15,7 @@ import preact from '@astrojs/preact';
 // https://astro.build/config
 export default defineConfig({
     site: 'https://lunadialsys.org',
-  
-    fonts: [
-        {
-            name: 'Lato',
-            cssVariable: '--font-main',
-            provider: fontProviders.google(),
-            fallbacks: ['sans-serif']
-        },
-        {
-            name: 'JetBrains Mono',
-            cssVariable: '--font-code',
-            provider: fontProviders.google(),
-            fallbacks: ['monospace']
-        },
-        {
-            name: 'Material Symbols Outlined',
-            cssVariable: '--font-icons',
-            provider: fontProviders.googleicons()
-        }
-    ],
-
+    
     markdown: {
         shikiConfig: {
             defaultColor: 'dark',
