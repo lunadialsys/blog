@@ -21,7 +21,7 @@ import {ClientRouter} from 'astro:transitions';
         <meta name="theme-color" content="#332044" />
         <link rel="icon" href="/favicon.svg" />
         <meta charset="utf-8"/>
-        <ClientRouter />
+        <ClientRouter fallback="none" />
     </head>
     <body data-theme="dark" data-subtheme={Astro.props.author}>
         <BackgroundEffect transition:persist="bg" />
@@ -49,7 +49,6 @@ body {
     --accent-crescent: #64c4ff;
     --text-crescent: black;
     
-    --c-default: #444;
     --c-nightshade: oklch(0.3121 0.069 307);
     --c-crescent: oklch(0.3528 0.049 238.12);
 }

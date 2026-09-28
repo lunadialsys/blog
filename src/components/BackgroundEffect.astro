@@ -18,10 +18,29 @@
     background: radial-gradient(circle at left var(--x) top 120%, white 0%, #777 110%);
 }
 
-@property --cl {
+/* disable all of this on firefox */
+body[data-your-browser-sucks]:not([data-subtheme]) {
+    --to: #555;
+}
+
+body[data-your-browser-sucks] .background-effect {
+    background: radial-gradient(circle at left var(--x) top 120%, var(--to) 0%, #111 110%);
+}
+
+body[data-your-browser-sucks] .background-effect-overlay {
+    display: none;
+}
+
+@property --from {
     syntax: '<color>';
-    initial-value: white;
-    inherits: false;
+    initial-value: #555;
+    inherits: true;
+}
+
+@property --to {
+    syntax: '<color>';
+    initial-value: #555;
+    inherits: true;
 }
 
 .background-effect-overlay {
@@ -30,12 +49,11 @@
     top: 0;
     width: 100dvw;
     height: 100dvh;
+    --from: inherit;
+    --to: inherit;
     margin: 0;
     padding: 0;
     z-index: -99;
-    --from: var(--c-default);
-    --to: var(--c-default);
-    --cl: var(--c-default);
     mix-blend-mode: multiply;
 }
 
@@ -58,19 +76,19 @@ body:not([data-subtheme-from]) .background-effect-overlay {
     }
 }
 
-body[data-subtheme-from="nightshade"] .background-effect-overlay {
+body[data-subtheme-from="nightshade"] {
     --from: var(--c-nightshade);
 }
 
-body[data-subtheme="nightshade"] .background-effect-overlay {
+body[data-subtheme="nightshade"] {
     --to: var(--c-nightshade);
 }
 
-body[data-subtheme-from="crescent"] .background-effect-overlay {
+body[data-subtheme-from="crescent"] {
     --from: var(--c-crescent);
 }
 
-body[data-subtheme="crescent"] .background-effect-overlay {
+body[data-subtheme="crescent"] {
     --to: var(--c-crescent);
 }
 </style>
@@ -83,13 +101,28 @@ document.addEventListener('mousemove', (ev) => {
     el.setAttribute('style', `--x: ${ev.pageX}px`);
 });
 
-document.addEventListener('astro:before-swap', (ev) => {
-    const fromSubtheme = $('body').getAttribute('data-subtheme');
-    const newEl = ev.newDocument.querySelector('body');
-    if (fromSubtheme == null) {
-        newEl.setAttribute('data-subtheme-from', '');
-    } else {
-        newEl.setAttribute('data-subtheme-from', fromSubtheme);
-    }
-});
+// Firefox breaks things, because of course it does
+function renderingEngineHasSkillIssue(): boolean {
+    return navigator.userAgent.match(/Gecko\/\d+/) != null;
+}
+
+if (!renderingEngineHasSkillIssue()) {
+    document.addEventListener('astro:before-swap', (ev) => {
+        const fromSubtheme = $('body').getAttribute('data-subtheme');
+        const newEl = ev.newDocument.querySelector('body');
+        if (fromSubtheme == null) {
+            newEl.setAttribute('data-subtheme-from', '');
+        } else {
+            newEl.setAttribute('data-subtheme-from', fromSubtheme);
+        }
+    });
+} else {
+    console.log('Detected rendering engine skill issue (user is on Gecko), disabling animated background transitions. Sad :(');
+    $('body').setAttribute('data-your-browser-sucks', '');
+    document.addEventListener('astro:before-swap', (ev) => {
+        const newBody = ev.newDocument.querySelector('body');
+        newBody.setAttribute('data-your-browser-sucks', '');
+    })
+}
+
 </script>
