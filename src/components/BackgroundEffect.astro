@@ -1,27 +1,95 @@
 ---
 
 ---
-<div class="background-effect" />
-
-<script>
-const $ = document.querySelector.bind(document);
-const bgElement = $('.background-effect');
-document.addEventListener('mousemove', (ev) => {
-    bgElement?.setAttribute('style', `--x: ${ev.pageX}px`);
-});
-</script>
+<div class="background-effect" style="--x: 50%;" transition:persist></div>
+<div class="background-effect-overlay" transition:persist></div>
 
 <style>
 .background-effect {
     position: fixed;
     left: 0;
     top: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100dvw;
+    height: 100dvh;
     margin: 0;
     padding: 0;
     z-index: -100;
     --x: 50vw;
-    background: radial-gradient(circle at left var(--x) top 120%, var(--bg-hotspot) 0%, var(--bg-outer) 110%);
+    background: radial-gradient(circle at left var(--x) top 120%, white 0%, #777 110%);
+}
+
+@property --cl {
+    syntax: '<color>';
+    initial-value: white;
+    inherits: false;
+}
+
+.background-effect-overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100dvw;
+    height: 100dvh;
+    margin: 0;
+    padding: 0;
+    z-index: -99;
+    --from: var(--c-default);
+    --to: var(--c-default);
+    --cl: var(--c-default);
+    mix-blend-mode: multiply;
+}
+
+/* only play the transition animation if we're actually transitioning from somewhere */
+body[data-subtheme-from] .background-effect-overlay {
+    animation: 500ms forwards background-overlay-fade;
+}
+
+/* if not, just directly set the colour to what it should be in the end */
+body:not([data-subtheme-from]) .background-effect-overlay {
+    background-color: var(--to);
+}
+
+@keyframes background-overlay-fade {
+    from {
+        background-color: var(--from);
+    }
+    to {
+        background-color: var(--to);
+    }
+}
+
+body[data-subtheme-from="nightshade"] .background-effect-overlay {
+    --from: var(--c-nightshade);
+}
+
+body[data-subtheme="nightshade"] .background-effect-overlay {
+    --to: var(--c-nightshade);
+}
+
+body[data-subtheme-from="crescent"] .background-effect-overlay {
+    --from: var(--c-crescent);
+}
+
+body[data-subtheme="crescent"] .background-effect-overlay {
+    --to: var(--c-crescent);
 }
 </style>
+
+<script>
+const $ = document.querySelector.bind(document);
+const el = $('.background-effect');
+
+document.addEventListener('mousemove', (ev) => {
+    el.setAttribute('style', `--x: ${ev.pageX}px`);
+});
+
+document.addEventListener('astro:before-swap', (ev) => {
+    const fromSubtheme = $('body').getAttribute('data-subtheme');
+    const newEl = ev.newDocument.querySelector('body');
+    if (fromSubtheme == null) {
+        newEl.setAttribute('data-subtheme-from', '');
+    } else {
+        newEl.setAttribute('data-subtheme-from', fromSubtheme);
+    }
+});
+</script>

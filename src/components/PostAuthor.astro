@@ -13,9 +13,23 @@ const NAMES: { [n: string]: string } = {
 <style>
 .author {
     display: inline-block;
-    background-color: var(--accent);
-    color: black;
     padding: 1pt 3pt;
+    background-color: var(--c);
+    color: var(--tc);
     border-radius: 4px;
 }
+</style>
+
+<style>
+
+.author[data-author="nightshade"] {
+    --c: var(--accent-nightshade);
+    --tc: var(--text-nightshade);
+}
+
+.author[data-author="crescent"] {
+    --c: var(--accent-crescent);
+    --tc: var(--text-crescent);
+}
+
 </style>

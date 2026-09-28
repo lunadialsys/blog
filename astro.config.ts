@@ -14,54 +14,58 @@ import preact from '@astrojs/preact';
 
 // https://astro.build/config
 export default defineConfig({
-  fonts: [
-      {
-          name: 'Lato',
-          cssVariable: '--font-main',
-          provider: fontProviders.google()
-      },
-      {
-          name: 'JetBrains Mono',
-          cssVariable: '--font-code',
-          provider: fontProviders.google()
-      },
-      {
-          name: 'Material Symbols Outlined',
-          cssVariable: '--font-icons',
-          provider: fontProviders.googleicons()
-      }
-  ],
+    site: 'https://lunadialsys.org',
+  
+    fonts: [
+        {
+            name: 'Lato',
+            cssVariable: '--font-main',
+            provider: fontProviders.google(),
+            fallbacks: ['sans-serif']
+        },
+        {
+            name: 'JetBrains Mono',
+            cssVariable: '--font-code',
+            provider: fontProviders.google(),
+            fallbacks: ['monospace']
+        },
+        {
+            name: 'Material Symbols Outlined',
+            cssVariable: '--font-icons',
+            provider: fontProviders.googleicons()
+        }
+    ],
 
-  markdown: {
-      shikiConfig: {
-          defaultColor: 'dark',
-          langAlias: {
-              teal: 'lua',
-          },
-          themes: {
-              dark: {
-                  ...shikiThemeDark,
-                  bg: 'var(--codeblock-bg)'
-              },
-              light: {
-                  ...shikiThemeLight,
-                  bg: 'var(--codeblock-bg)'
-              }
-          },
-      },
-      processor: satteri({
-          features: {gfm: true, smartPunctuation: false},
-          mdastPlugins: [
-              parseFootnoteDefinitions(),
-              parseFootnotes()
-          ],
-          hastPlugins: [
-              parseCodeblocks(),
-              satteriHeadingIdsPlugin(),
-              parseHeadings()
-          ]
-      }),
-  },
+    markdown: {
+        shikiConfig: {
+            defaultColor: 'dark',
+            langAlias: {
+                teal: 'lua',
+            },
+            themes: {
+                dark: {
+                    ...shikiThemeDark,
+                    bg: 'var(--codeblock-bg)'
+                },
+                light: {
+                    ...shikiThemeLight,
+                    bg: 'var(--codeblock-bg)'
+                }
+            },
+        },
+        processor: satteri({
+            features: {gfm: true, smartPunctuation: false},
+            mdastPlugins: [
+                parseFootnoteDefinitions(),
+                parseFootnotes()
+            ],
+            hastPlugins: [
+                parseCodeblocks(),
+                satteriHeadingIdsPlugin(),
+                parseHeadings()
+            ]
+        }),
+    },
 
-  integrations: [mdx(), preact()]
+    integrations: [mdx(), preact()]
 });

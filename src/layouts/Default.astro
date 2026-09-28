@@ -6,8 +6,9 @@ import Header from '../components/Header.astro';
 
 const title = Astro.props.title;
 const titleHeader = "Luna Dial System";
+import {ClientRouter} from 'astro:transitions';
 ---
-<html>
+<html transition:name="root" transition:animate="none">
     <head>
         <Font cssVariable="--font-main" preload />
         <Font cssVariable="--font-code" />
@@ -20,9 +21,10 @@ const titleHeader = "Luna Dial System";
         <meta name="theme-color" content="#332044" />
         <link rel="icon" href="/favicon.svg" />
         <meta charset="utf-8"/>
+        <ClientRouter />
     </head>
-    <body data-theme="dark">
-        <BackgroundEffect />
+    <body data-theme="dark" data-subtheme={Astro.props.author}>
+        <BackgroundEffect transition:persist="bg" />
         <Header />
         <slot/>
     </body>
@@ -35,11 +37,21 @@ body {
     
     --accent-dark: #dcc5f4;
     
-    --bg-outer-dark: oklch(0.156 0.035 307);
-    --bg-hotspot-dark: oklch(0.285 0.069 307);
+    --bg-outer-dark: #0c0c0c;
+    --bg-hotspot-dark: #222222;
 
     --codeblock-bg-dark: #22222255;
     --codeblock-bg-inline-dark: #222222aa;
+
+    --accent-nightshade: #efbaff;
+    --text-nightshade: black;
+
+    --accent-crescent: #64c4ff;
+    --text-crescent: black;
+    
+    --c-default: #444;
+    --c-nightshade: oklch(0.3121 0.069 307);
+    --c-crescent: oklch(0.3528 0.049 238.12);
 }
 
 body[data-theme="dark"] {

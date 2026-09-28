@@ -2,12 +2,40 @@
 import Page from '../layouts/Page.astro';
 import MarkdownContent from '../components/MarkdownContent.astro';
 import Header from '../components/PostHeader.astro';
-import * as md from '../about.md';
-const content = await md.compiledContent();
 ---
-<Page title={md.frontmatter.title}>
-    <Header title={md.frontmatter.title}/>
+<Page title="About us">
+    <Header title="About us"/>
     <MarkdownContent>
-        <Fragment set:html={content} />
+        <h2>English</h2>
+        <p>
+            Hello! We're the Luna Dial System. We are a plural system (OSDD-1-type) of two members, Nightshade and Crescent; our names are based on the phases of the moon.
+        </p>
+        <p>
+            We are a transgender girl; we are from Italy, but we live in London, UK.
+            Our life mostly consists of programming, music production, neurodiversity; coding in C#, Lua, Teal.
+        </p>
+        <p>
+            We are a big fan of art and design; we compose our own music and design our own graphics. This website was entirely designed by us.
+        </p>
+        <h2>Italiano</h2>
+        <p>
+            Ciao! Siamo il Sistema Quadrante Lunare. Siamo una persona con disturbo dissociativo di tipo OSDD-1; la nostra collettiva include due membri, che in inglese si chiamano Nightshade e Crescent.
+        </p>
+        <p>
+            Non abbiamo il disturbo dissociativo d'identità (DID), ma una cosa simile, sempre con stati di personalità alternati.
+        </p>
+        <p>
+            Siamo una ragazza transgender, e italiani, però abitiamo a Londra in Inghilterra. 
+            Più che altro, la nostra vita consiste nel programmare, produrre musica, e gestire i vari effetti della neurodiversità.
+        </p>
+        <p>
+            Siamo appassionati dei linguaggi di programmazione C#, Lua, Teal.
+            Siamo anche fan dell'arte e del design, noi scriviamo musica e creiamo i nostri <i>web design</i>, come questo sito, che è interamente nostro.
+        </p>
+        <h2>Contact / Contatta</h2>
+        <ul>
+            <li>Signal: <code>lunadialsys.62</code></li>
+            <li>GitHub: <a href="github.com/lunadialsys">lunadialsys</a></li>
+        </ul>
     </MarkdownContent>
 </Page>
