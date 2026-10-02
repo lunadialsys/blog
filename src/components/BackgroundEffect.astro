@@ -94,7 +94,7 @@ body[data-subtheme="crescent"] {
 </style>
 
 <script>
-const $ = document.querySelector.bind(document);
+const $ = (x: any) => document.querySelector(x)!;
 const el = $('.background-effect');
 
 document.addEventListener('mousemove', (ev) => {
@@ -109,7 +109,7 @@ function renderingEngineHasSkillIssue(): boolean {
 if (!renderingEngineHasSkillIssue()) {
     document.addEventListener('astro:before-swap', (ev) => {
         const fromSubtheme = $('body').getAttribute('data-subtheme');
-        const newEl = ev.newDocument.querySelector('body');
+        const newEl = ev.newDocument.querySelector('body')!;
         if (fromSubtheme == null) {
             newEl.setAttribute('data-subtheme-from', '');
         } else {
@@ -120,7 +120,7 @@ if (!renderingEngineHasSkillIssue()) {
     console.log('Detected rendering engine skill issue (user is on Gecko), disabling animated background transitions. Sad :(');
     $('body').setAttribute('data-your-browser-sucks', '');
     document.addEventListener('astro:before-swap', (ev) => {
-        const newBody = ev.newDocument.querySelector('body');
+        const newBody = ev.newDocument.querySelector('body')!;
         newBody.setAttribute('data-your-browser-sucks', '');
     })
 }
