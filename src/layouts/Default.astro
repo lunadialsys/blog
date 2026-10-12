@@ -1,8 +1,6 @@
 ---
-import {Font} from 'astro:assets';
-
-import BackgroundEffect from '../components/BackgroundEffect.astro';
-import Header from '../components/Header.astro';
+import BackgroundEffect from '@components/BackgroundEffect.astro';
+import Header from '@components/Header.astro';
 
 const title = Astro.props.title;
 const titleHeader = "Luna Dial System";
@@ -71,6 +69,7 @@ body[data-theme="dark"] {
 
 .icon {
     font-family: var(--font-icons);
+    line-height: 100%;
 }
 
 .deemphasise {

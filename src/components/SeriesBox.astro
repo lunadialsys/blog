@@ -1,0 +1,239 @@
+---
+import { getCollection } from "astro:content";
+import { getEntry } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+
+let prev: CollectionEntry<'blog'> | undefined;
+let next: CollectionEntry<'blog'> | undefined;
+
+interface SeriesEntry extends CollectionEntry<'series'> {
+    part: number;
+    totalParts: number;
+}
+
+const entry = Astro.props.entry;
+let series: SeriesEntry;
+
+const postsInSeries = (await getCollection('blog'))
+    .filter(e => !e.data?.draft)
+    .filter(e => e.data?.series == entry.data.series)
+    .toSorted((a, b) => a.data.date.valueOf() - b.data.date.valueOf());
+const thisPart = postsInSeries.findIndex(e => e.id == entry.id);
+const seriesEntry = (await getEntry('series', entry.data.series))!;
+
+if (thisPart != 0)
+    prev = postsInSeries[thisPart - 1];
+if (thisPart != postsInSeries.length - 1)
+    next = postsInSeries[thisPart + 1];
+series = {
+    part: thisPart + 1,
+    totalParts: postsInSeries.length,
+    ...seriesEntry
+};
+---
+<div class="box series">
+    <span class="tag">This post is part of a series</span>
+    <div class="box-content">
+        <p class="series-name">
+            <span class="big">{series.data.name}</span>
+            <span class="small">part {series.part} <span class="deemphasise">(of {series.totalParts})</span></span>
+        </p>
+        <p class="series-line">
+            {series.data.line}
+        </p>
+        <div class="series-prevnext">
+            {
+                prev ?
+                <a href={`/${prev.id}`} class="link">← Previous entry</a> :
+                <a href="/" class="link disabled" aria-disabled>← Previous entry</a>
+            }
+            <div class="sep"/>
+            {
+                next ?
+                <a href={`/${next.id}`} class="link">Next entry →</a> :
+                <a href="/" class="link disabled" aria-disabled>Next entry →</a>
+            }
+        </div>
+    </div>
+    <details class="series-all">
+        <summary>
+            <span class="icon closed">keyboard_arrow_down</span>
+            <span class="icon open">keyboard_arrow_up</span>
+            <span class="detail">
+                All entries
+            </span>
+            <span class="icon closed">keyboard_arrow_down</span>
+            <span class="icon open">keyboard_arrow_up</span>
+        </summary>
+        <div class="content">
+            <p class="deemphasise">Other posts in this series:</p>
+            <ol>
+                {postsInSeries.map(e =>
+                    <li>
+                        {e.id != entry.id ?
+                            <a href={`/${e.id}`}>{e.data.title}</a> :
+                            <span>{e.data.title} <span class="deemphasise">(this post)</span></span>}
+                    </li>)}
+            </ol>
+        </div>
+    </details>
+</div>
+
+<style>
+.box {
+    --bg: #222222;
+    --tag-bg: #444444;
+    margin-bottom: 1rem;
+    filter: drop-shadow(4px 4px 5px #00000088);
+}
+
+.box>.tag {
+    display: block;
+    background-color: var(--tag-bg);
+    --cut: 0.8rem;
+    --pad-v: 0.3rem;
+    --pad-h: 0.5rem;
+    padding: var(--pad-v) calc(var(--pad-h) + var(--cut)) var(--pad-v) calc(var(--pad-h) + var(--cut));
+    font-size: 10pt;
+    clip-path: polygon(
+        0 calc(var(--cut)),
+        calc(var(--cut)) 0,
+        calc(100% - var(--cut)) 0,
+        100% calc(var(--cut)),
+        100% 100%,
+        0 100%);
+}
+
+.box>.box-content {
+    background-color: var(--bg);
+    padding: 0.75rem 1rem 1rem 1rem;
+}
+
+.series-name {
+    margin: 0;
+}
+
+.series-name .big {
+    font-size: 18pt;
+}
+
+.series-name .small {
+    margin-left: 4pt;
+}
+
+.series-line {
+    margin: 0.25rem 0 1rem 0;
+    font-style: italic;
+    color: var(--deemphasise);
+}
+
+.series-prevnext {
+    display: flex;
+    flex-direction: row;
+    margin-top: 0.5rem;
+}
+.series-prevnext .link.disabled {
+    user-select: none;
+    pointer-events: none;
+    color: var(--deemphasise);
+    text-decoration: none;
+}
+.series-prevnext .sep {
+    flex-grow: 1;
+}
+
+.box .series-all>summary {
+    display: flex;
+    background-color: var(--tag-bg);
+    --cut: 0.8rem;
+    --pad-v: 0.3rem;
+    --pad-h: 0.5rem;
+    padding: var(--pad-v) calc(var(--pad-h) + var(--cut));
+    font-size: 18pt;
+    justify-content: center;
+    align-items: center;
+    line-height: 65%;
+    color: #9a9a9a;
+    clip-path: polygon(
+        0 0,
+        0 calc(100% - var(--cut)),
+        calc(var(--cut)) 100%,
+        calc(100% - var(--cut)) 100%,
+        100% calc(100% - var(--cut)),
+        100% 0);
+    transition: 300ms background-color;
+    user-select: none;
+}
+
+.box .series-all>summary .icon {
+    line-height: 65%;
+}
+
+.box .series-all>summary .detail {
+    font-size: 10pt;
+    margin-left: 4pt;
+    margin-right: 4pt;
+    transform: translateY(-1px);
+}
+
+.box .series-all>summary .open {
+    display: none;
+}
+
+.box .series-all[open]>summary .open {
+    display: inline-block;
+}
+
+.box .series-all[open]>summary .closed {
+    display: none;
+}
+
+.box .series-all>summary .closed {
+    display: inline-block;
+}
+
+.box .series-all>summary:hover {
+    cursor: pointer;
+    transition: 300ms background-color;
+    background-color: #555555;
+}
+
+.box .series-all>summary:active {
+    transition: 150ms background-color, 150ms transform;
+    transform: translateY(2px);
+    background-color: #111;
+}
+
+.box .series-all[open]>summary {
+    animation: box-flash 300ms forwards;
+}
+
+@keyframes box-flash {
+    0% {
+        background-color: #888888;
+    }
+    100% {
+        background-color: var(--tag-bg);
+    }
+}
+
+.box .series-all .content {
+    background-color: #1a1a1a;
+    margin: 0 1rem 0 1rem;
+    padding: 1rem;
+}
+.box .series-all .content>p {
+    margin: 0;
+}
+.box .series-all .content>ol {
+    margin: 0.5rem 0 0 0;
+}
+.box .series-all .content>ol>li {
+    margin: 0.5rem 0 0 0;
+}
+
+.box .series-all .content li::marker {
+    color: var(--deemphasise);
+}
+
+</style>

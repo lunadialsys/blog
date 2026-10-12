@@ -19,15 +19,15 @@
 }
 
 /* disable all of this on firefox */
-body[data-your-browser-sucks]:not([data-subtheme]) {
+body[data-has-feature*="disable-webkit-transitions"]:not([data-subtheme]) {
     --to: #555;
 }
 
-body[data-your-browser-sucks] .background-effect {
+body[data-has-feature*="disable-webkit-transitions"] .background-effect {
     background: radial-gradient(circle at left var(--x) top 120%, var(--to) 0%, #111 110%);
 }
 
-body[data-your-browser-sucks] .background-effect-overlay {
+body[data-has-feature*="disable-webkit-transitions"] .background-effect-overlay {
     display: none;
 }
 
@@ -94,6 +94,8 @@ body[data-subtheme="crescent"] {
 </style>
 
 <script>
+import { flagFeature, SiteFeature } from "@util/features";
+
 const $ = (x: any) => document.querySelector(x)!;
 const el = $('.background-effect');
 
@@ -118,11 +120,10 @@ if (!renderingEngineHasSkillIssue()) {
     });
 } else {
     console.log('Detected rendering engine skill issue (user is on Gecko), disabling animated background transitions. Sad :(');
-    $('body').setAttribute('data-your-browser-sucks', '');
-    document.addEventListener('astro:before-swap', (ev) => {
-        const newBody = ev.newDocument.querySelector('body')!;
-        newBody.setAttribute('data-your-browser-sucks', '');
-    })
+    flagFeature(SiteFeature.NoWebkitTransitions);
+    document.addEventListener('astro:after-swap', () => {
+        flagFeature(SiteFeature.NoWebkitTransitions);
+    });
 }
 
 </script>

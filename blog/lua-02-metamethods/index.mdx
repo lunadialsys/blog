@@ -1,0 +1,175 @@
+---
+title: "Lunar Grimoire #2: metatables and metamethods"
+authors: [nightshade]
+tags: [english, programming, lua]
+date: 2026-10-04
+series: grimoire
+---
+import Box from '@components/Box.astro';
+
+※ _Just like last time, all code presented in this article will be written in Teal._
+
+Hi! Welcome to instalment #2 of the Lunar Grimoire, our series detailing all the info about the darker parts of the Lua programming language.
+This time we're talking about metatables and metamethods, and because there's a lot of ground to cover, and most of it is fairly well-known... this one won't be too long.
+
+First off, let's start with some basic terminology for the uninitiated: a _metatable_ is a table that modifies the behaviour of another object[^1], usually a table.
+A metatable is just any table that has methods defined under some special keys, which the Lua runtime will call whenever something happens to that object.
+We call the callback methods defined on a metatable _metamethods_, and they can modify the behaviour of other Lua objects in incredibly powerful ways.
+
+You can set another table's metatable using the function called, uh, `setmetatable`, and you can
+retrieve a previously-set metatable using its twin, which is called - get this! - `getmetatable`.
+You can also _unset_ a metatable by using `setmetatable(target, nil)`;
+there are some other, niche ways to manipulate metatables, which I'll get into later on.
+
+Metatables are the premier method of metaprogramming available to the Lua programmer! They allow the programmer to bend the semantics of the language like putty.
+Don't believe me? You will by the end. Let's get into it!
+
+## So, what's the big deal?
+If you're a Lua programmer, you can probably answer the question of "what can I do with a metatable" a hundred different ways,
+but for now, let's start with the basics, and the simplest application of metatables: operator overloads.
+
+```lua
+local record Point
+    x: number
+    y: number
+end
+
+local function make_point(x, y): Point
+    local a = {x = x, y = y} as Point
+    setmetatable(a, {
+        -- (lhs + rhs)
+        __add = function(lhs: Point, rhs: Point): Point
+            return make_point(lhs.x + rhs.x, lhs.y + rhs.y)
+        end,
+        -- (lhs - rhs)
+        __sub = function(lhs: Point, rhs: Point): Point
+            return make_point(lhs.x - rhs.x, lhs.y - rhs.y)
+        end,
+        -- (lhs * rhs)
+        __mul = function(lhs: Point, rhs: Point): Point
+            return make_point(lhs.x * rhs.x, lhs.y * rhs.y)
+        end,
+        -- (lhs / rhs)
+        __div = function(lhs: Point, rhs: Point): Point
+            return make_point(lhs.x / rhs.x, lhs.y / rhs.y)
+        end,
+        -- (-self), e.g. unary negation (-x)
+        __unm = function(self: Point): Point
+            return make_point(-self.x, -self.y)
+        end
+    })
+    return a
+end
+
+local a = make_point(14, 62)
+local b = a + make_point(2, 4)
+print(b.x, b.y) -- 16, 66
+```
+
+There's a couple more (omitted from the example for brevity), so let's rapid-fire through them:
+  - `__mod`, for the modulus operator `lhs % rhs`.
+  - `__pow`, for the exponentiation operator `lhs ^ rhs`.
+  - `__idiv`, for the integer division operator `lhs // rhs`.
+  - `__band`, for the bitwise AND operator `lhs & rhs`.
+  - `__bor`, for the bitwise OR operator `lhs | rhs`.
+  - `__bxor`, for the bitwise XOR operator `lhs ~ rhs`.
+  - `__shl`, for the bitwise shift left operator `lhs << rhs`.
+  - `__shr`, for the bitwise shift right operator `lhs >> rhs`.
+  - Finally, `__bnot` for the bitwise NOT operator `~lhs`. **This one takes only one argument, not two**, like `__unm`.
+
+All of them aside from `__mod` and `__pow` are exclusive to Lua 5.3 and above.[^2]
+
+**The above code has two glaring flaws, however.** Operator overloads have some catches to them that you have to look out for.
+
+The first one: if you're applying an operator that has a metamethod across two values that do not have the same metatable, _it will still be invoked_.
+This means that `a + 2`, for instance, will cause an `attempt to index a number value` error, as the metamethod attempts to get the `.x` of a number, and dies.
+
+And the second one: with binary operators, **the first argument is not guaranteed to be an instance of your table**.
+This is why I didn't call the left-hand-side argument `self`; because _it can not be!_ It's _always_ recommended that you use the `type` function
+to ensure that your arguments are shaped the way you expect them to be, before performing any operations.
+The Teal compiler gives metatable arguments a type of `any` for this reason; it cannot guarantee that either argument has a concrete type.
+
+You can get away with ignoring the above two points if you're careful, but if you're writing a library for anyone else to consume, look out.
+
+
+## Becoming object-oriented
+The most common application of metatables within Lua is to provide an object-orientation system.
+This, in my view, is a very big part of Lua's flexibility; what other language gives you the tools to _bring your own object system?_
+I can only think of Lua, and I love it for that.
+
+One of the primary utilities available to do that are the two metamethods `__index` and `__newindex`.
+`__index` is invoked whenever the table is indexed with a nonexistent key; its return value becomes the value returned by the index operation.
+`__newindex`, on the other hand, is invoked whenever a key is attempted to be created on the table.
+`__newindex` is invoked **instead** of setting the key; if you don't set it within the method, it won't be set at all.
+
+Notably, **neither of these two methods are invoked when reaching a key that already exists on the table**.
+This means that if you have a table that contains one member, `a`, and you set a `__newindex` on it, your function won't be called if the member `a` is set to some other value.
+However, if you attempt to set the key `b` on that table to a value, _that_ is when your `__newindex` will be invoked.
+
+There is also a pair of functions called `rawget` and `rawset`, which bypass these metamethods, and set/get keys without invoking them.
+This is how you retrieve keys from your own table from within an `__index` metamethod; doing it the obvious way will result in infinite recursion,
+as the `__index` metamethod will just invoke itself forever.
+
+Let's look at an example:
+```lua
+local my_table = {a = 1} as {any:any}
+setmetatable(my_table, {
+    __index = function(self, key): any
+        if key == 'b' then
+            return 2
+        end
+        return rawget(self as {any:any}, key)
+    end,
+    __newindex = function(_self, key, value)
+        print('Intercepted set: '..tostring(key)..' = '..tostring(value))
+    end
+})
+
+print(my_table.a) -- 1
+print(my_table.b) -- 2
+my_table.c = 20 -- Intercepted set: c = 20
+print(my_table.c) -- nil, because c was not set
+```
+
+An interesting application of `__index` is to implement the _prototype_ pattern of object-orientation, as seen in JavaScript:
+```lua
+local interface PointType
+    x: number
+    y: number
+    add: function(self, number, number): self
+end
+
+-- this is our prototype:
+local Point = {}
+
+function Point.new(x: number, y: number): PointType
+    local instance: PointType = {x = x, y = y}
+    setmetatable(instance, {
+        __index = function(_self, key): any
+            -- look up the key out of the prototype, instead of the table:
+            return rawget(Point as table, key)
+        end
+    })
+    return instance
+end
+
+function Point.add(self: PointType, x: number, y: number): PointType
+    return Point.new(self.x + x, self.y + y)
+end
+
+local coordinates = Point.new(24, 24)
+local new_coords = coordinates:add(12, 12)
+print(new_coords.x, new_coords.y) -- 36, 36
+```
+
+Take particular note of how, in this example, `x` and `y` don't go through the `__index` method, because they exist on the instance.
+If you're familiar with JavaScript, this behaves similarly to the concept of "shadowing" in prototypes; Lua looks the value up within the object
+before it calls the method to look it up within the prototype.
+
+
+## Debug strikes back
+
+
+[^1]: Note how I'm not saying "another table", but rather "another _object_".
+[^2]: `__mod` and `__pow` are exclusive to Lua 5.1 and above, but... does that even matter? Who's even using Lua 5.0 these days?
+As of writing this article, Lua 5.1 is **_19_ years old**...

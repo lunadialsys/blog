@@ -1,8 +1,8 @@
 ---
-import Default from '../layouts/Default.astro';
-import ContentHolder from '../components/ContentHolder.astro';
+import Default from '@layouts/Default.astro';
+import ContentHolder from '@components/ContentHolder.astro';
 import {getCollection} from 'astro:content';
-import PostLink from '../components/PostLink.astro';
+import PostLink from '@components/PostLink.astro';
 import type { CollectionEntry } from 'astro:content';
 
 const posts: CollectionEntry<'blog'>[] = (await getCollection('blog'))

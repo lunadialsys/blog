@@ -25,10 +25,8 @@ const Heading = `h${Astro.props.level}` as keyof JSX.IntrinsicElements;
     color: color(from var(--text) srgb r g b / 0.4);
     transition: 200ms color;
     /* this is an insanely ugly hack! */
-    --clip: 3.5pt;
     --shift: 2pt;
     transform: translateY(var(--shift));
-    clip-path: polygon(0 var(--clip), 100% var(--clip), 100% calc(100% - var(--clip)), 0 calc(100% - var(--clip)));
 }
 
 .ld-heading .permalink:hover {

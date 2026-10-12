@@ -1,0 +1,79 @@
+---
+
+let tag;
+let classes = [];
+if (Astro.props.warning) {
+    tag = 'Warning';
+    classes.push('warning');
+} else if (Astro.props.caution) {
+    tag = 'Caution';
+    classes.push('caution');
+} else {
+    tag = Astro.props.tag;
+    if (Astro.props.classes) classes.push(...Astro.props.classes);
+    if (Astro.props.class) classes.push(Astro.props.class);
+}
+
+---
+<div class:list={['box', ...classes]}>
+    <span class="tag">{tag}</span>
+    <div class="content">
+        <slot/>
+    </div>
+</div>
+
+<style>
+.box {
+    --bg: #222222;
+    --tag-bg: #444444;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    filter: drop-shadow(4px 4px 5px #00000088);
+}
+
+.box>.tag {
+    display: block;
+    background-color: var(--tag-bg);
+    --cut: 0.8rem;
+    --pad-v: 0.3rem;
+    --pad-h: 0.5rem;
+    padding: var(--pad-v) calc(var(--pad-h) + var(--cut)) var(--pad-v) calc(var(--pad-h) + var(--cut));
+    font-size: 10pt;
+    clip-path: polygon(
+        0 calc(var(--cut)),
+        calc(var(--cut)) 0,
+        calc(100% - var(--cut)) 0,
+        100% calc(var(--cut)),
+        100% 100%,
+        0 100%);
+}
+
+.box>.content {
+    background-color: var(--bg);
+    padding: 0.75rem 1rem 1rem 1rem;
+}
+
+.box>.footer {
+    position: relative;
+    height: 4pt;
+    background-color: var(--tag-bg);
+    --cut: 0.8rem;
+    --pad-v: 0.3rem;
+    --pad-h: 0.5rem;
+    padding: var(--pad-v) calc(var(--pad-h) + var(--cut));
+    justify-content: center;
+    align-items: center;
+    font-size: 10pt;
+    color: #9a9a9a;
+    clip-path: polygon(
+        0 0,
+        0 calc(100% - var(--cut)),
+        calc(var(--cut)) 100%,
+        calc(100% - var(--cut)) 100%,
+        100% calc(100% - var(--cut)),
+        100% 0);
+    transition: 300ms background-color;
+    user-select: none;
+}
+
+</style>
