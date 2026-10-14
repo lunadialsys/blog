@@ -3,7 +3,6 @@ title: "Lunar Grimoire #2: metatables and metamethods"
 authors: [nightshade]
 tags: [english, programming, lua]
 date: 2026-10-04
-draft: true
 series: grimoire
 ---
 import Box from '@components/Box.astro';
@@ -163,14 +162,28 @@ local new_coords = coordinates:add(12, 12)
 print(new_coords.x, new_coords.y) -- 36, 36
 ```
 
+// TODO (remove before publishing): refactor narrative to go with adding more features to above example?
+
 Take particular note of how, in this example, `x` and `y` don't go through the `__index` method, because they exist on the instance.
 If you're familiar with JavaScript, this behaves similarly to the concept of "shadowing" in prototypes; Lua looks the value up within the object
 before it calls the method to look it up within the prototype.
 
+The `__tostring` metamethod is relatively straight-forward: it allows you to modify the string representation of your table, as seen when passed to the `tostring` function.
+```lua
+-- TODO example
+```
 
-## Debug strikes back
+
+## Phone's ringing
+Usually, calling a table results in the runtime blowing up in your face with an `attempt to call a table value` error.
+Defining the `__call` metamethod on a table will turn that table callable - the metamethod will be invoked when the table it's on is called.
+This doesn't seem too immediately useful at first, but it allows for ergonomic syntax extensions
+
+
+## Debug and C
+Metatables can be set on more than just tables.
 
 
 [^1]: Note how I'm not saying "another table", but rather "another _object_".
 [^2]: `__mod` and `__pow` are exclusive to Lua 5.1 and above, but... does that even matter? Who's even using Lua 5.0 these days?
-As of writing this article, Lua 5.1 is **_19_ years old**...
+As of writing this article, Lua 5.1 is close to twenty years old...
